@@ -1,7 +1,11 @@
 import tensorflow as tf
 
+from encoders.encode_helper import EncodeHelper
+
 features = None
 mode = tf.estimator.ModeKeys.PREDICT
+
+train_values = EncodeHelper.read_encode_review_text("data/Grocery_Filtered_1000.json")
 
 def cnn_model_fn(features, labels, mode):
     # Input Layer

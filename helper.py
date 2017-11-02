@@ -42,13 +42,27 @@ class FileHelper:
         return texts, summaries, overall
 
     @staticmethod
-    def encode_to_ascii(text):
-        for code in map(ord, "bla bla bla"):
-            print(bin(int(code))[2:].zfill(8))
+    def read_json_data_obj(name):
+        results = []
+
+        with open(name, "r") as json_file:
+            for line in json_file:
+                str = json.loads(line)
+                results.append({str["reviewText"], str["summary"], str["overall"]})
+
+        return results
 
     @staticmethod
-    def encode_to_alphabet(name, max_num=None):
-        return ""
+    def encode_to_alphabet(text, alphabet):
+        encoded_text = []
+
+        for char in text:
+            if char not in alphabet:
+                print("unknown char {0}".format(char))
+
+            encoded_text.append(alphabet[char])
+
+        return encoded_text
 
     @staticmethod
     def read_word2vec(file_name="word2vec/glove.6B.50d.txt"):
