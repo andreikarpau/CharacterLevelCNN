@@ -16,22 +16,9 @@ class PreprocessData:
                 f.write('\n')
 
     @staticmethod
-    def encode_messages(alphabet_dict, filename="data/Grocery_Filtered_1000.json"):
-        texts, summaries, scores = FileHelper.read_data_file(filename, FileHelper.default_filter)
-
-        messages = [None] * len(texts)
-        encoded_messages = [None] * len(texts)
-
-        for i in range(0, len(texts)):
-            messages[i] = "{0}\n{1}".format(summaries[i].upper(), texts[i])
-            encoded_messages[i] = FileHelper.encode_to_alphabet(messages[i], alphabet_dict, True)
-
-        return encoded_messages, messages, scores
-
-    @staticmethod
     def store_encoded_messages(filename='data/Grocery_Filtered_1000_Encoded.pickle'):
         PreprocessData.save_filtered_messages()
-        encoded_messages, messages, scores = PreprocessData.encode_messages(FileHelper.make_alphabet_encoding())
+        encoded_messages, messages, scores = EncodeHelper.encode_messages(EncodeHelper.make_alphabet_encoding())
         items = [None] * len(encoded_messages)
 
         with open(filename, 'wb') as f:

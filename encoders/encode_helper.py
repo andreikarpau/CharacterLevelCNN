@@ -32,3 +32,67 @@ class EncodeHelper:
 
         with open(name, 'w') as f:
             json.dump(codes, f)
+
+    @staticmethod
+    def encode_to_alphabet(text, alphabet_dict, to_lower=False):
+        length = len(text)
+        encoded_list = [None] * length
+
+        if to_lower:
+            text = text.lower()
+
+        i = 0
+        for c in text:
+            if c in alphabet_dict:
+                encoded_list[i] = alphabet_dict[c]
+            else:
+                encoded_list[i] = alphabet_dict['blank']
+
+            i += 1
+
+        return encoded_list
+
+    # @staticmethod
+    # def encode_from_alphabet(encoded_message, alphabet_dict, to_lower=False):
+    #     for c in encoded_message:
+    #         if c in alphabet_dict:
+    #             encoded_list[i] = alphabet_dict[c]
+    #         else:
+    #             encoded_list[i] = alphabet_dict['blank']
+    #
+    #         i += 1
+    #
+    #     return encoded_list
+
+    alphabet_standard = "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:’/\|_@#$%ˆ&*˜‘+-=<>()[]{}\n"
+
+    @staticmethod
+    def make_alphabet_encoding(alphabet=alphabet_standard):
+        codes = {}
+        length = len(alphabet)
+        index = 0
+
+        for c in alphabet:
+            code_array = [0] * length
+            code_array[index] = 1
+            index += 1
+            codes[c] = code_array
+
+        codes[' '] = [0] * length
+        codes['blank'] = [0] * length
+        return codes
+
+
+    @staticmethod
+    def encode_messages(alphabet_dict, filename="data/Grocery_Filtered_1000.json"):
+        texts, summaries, scores = FileHelper.read_data_file(filename, FileHelper.default_filter)
+
+        messages = [None] * len(texts)
+        encoded_messages = [None] * len(texts)
+
+        for i in range(0, len(texts)):
+            messages[i] = "{0}\n{1}".format(summaries[i].upper(), texts[i])
+            encoded_messages[i] = EncodeHelper.encode_to_alphabet(messages[i], alphabet_dict, True)
+
+        return encoded_messages, messages, scores
+

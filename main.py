@@ -1,12 +1,14 @@
 import tensorflow as tf
 
+from encoders.encode_helper import EncodeHelper
 from helper import FileHelper
+from preprocess_data import PreprocessData
 
 features = None
 mode = tf.estimator.ModeKeys.PREDICT
-alphabet_size = len(FileHelper.alphabet_standard)
+alphabet_size = len(EncodeHelper.alphabet_standard)
 
-train_values = EncodeHelper.read_encode_review_text("data/Grocery_Filtered_1000.json")
+encoded_messages, scores = PreprocessData.get_encoded_messages()
 
 def cnn_model_fn(features, labels, mode):
     # Input Layer
