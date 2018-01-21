@@ -6,6 +6,8 @@ features = None
 mode = tf.estimator.ModeKeys.PREDICT
 alphabet_size = len(FileHelper.alphabet_standard)
 
+train_values = EncodeHelper.read_encode_review_text("data/Grocery_Filtered_1000.json")
+
 def cnn_model_fn(features, labels, mode):
     # Input Layer
     input_layer = tf.reshape(features["x"], [-1, alphabet_size, 1024, 1])

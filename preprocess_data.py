@@ -1,3 +1,4 @@
+from encoders.encode_helper import EncodeHelper
 from helper import FileHelper
 import json
 import pickle
