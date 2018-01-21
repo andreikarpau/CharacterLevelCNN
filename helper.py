@@ -9,7 +9,7 @@ class FileHelper:
         # if score < 1 or score == 3 or 5 < score:
         #     return False
 
-        if len(text) < 100 or 1024 < (len(text) + len(summary) + len("text: ; summary: ;")):
+        if len(text) < 100 or 1024 < (len(text) + len(summary) + len(" \n ")):
             return False
 
         return True
@@ -43,12 +43,57 @@ class FileHelper:
 
     @staticmethod
     def encode_to_ascii(text):
-        for code in map(ord, "bla bla bla"):
+        for code in map(ord, text):
             print(bin(int(code))[2:].zfill(8))
 
     @staticmethod
-    def encode_to_alphabet(name, max_num=None):
-        return ""
+    def encode_to_alphabet(text, alphabet_dict, to_lower=False):
+        length = len(text)
+        encoded_list = [None] * length
+
+        if to_lower:
+            text = text.lower()
+
+        i = 0
+        for c in text:
+            if c in alphabet_dict:
+                encoded_list[i] = alphabet_dict[c]
+            else:
+                encoded_list[i] = alphabet_dict['blank']
+
+            i += 1
+
+        return encoded_list
+
+    # @staticmethod
+    # def encode_from_alphabet(encoded_message, alphabet_dict, to_lower=False):
+    #     for c in encoded_message:
+    #         if c in alphabet_dict:
+    #             encoded_list[i] = alphabet_dict[c]
+    #         else:
+    #             encoded_list[i] = alphabet_dict['blank']
+    #
+    #         i += 1
+    #
+    #     return encoded_list
+
+    alphabet_standard = "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:’/\|_@#$%ˆ&*˜‘+-=<>()[]{}\n"
+
+    @staticmethod
+    def make_alphabet_encoding(alphabet=alphabet_standard):
+        codes = {}
+        length = len(alphabet)
+        index = 0
+
+        for c in alphabet:
+            code_array = [0] * length
+            code_array[index] = 1
+            index += 1
+            codes[c] = code_array
+
+        codes[' '] = [0] * length
+        codes['blank'] = [0] * length
+        return codes
 
     @staticmethod
     def read_word2vec(file_name="word2vec/glove.6B.50d.txt"):

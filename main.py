@@ -1,11 +1,14 @@
 import tensorflow as tf
 
+from helper import FileHelper
+
 features = None
 mode = tf.estimator.ModeKeys.PREDICT
+alphabet_size = len(FileHelper.alphabet_standard)
 
 def cnn_model_fn(features, labels, mode):
     # Input Layer
-    input_layer = tf.reshape(features["x"], [-1, 8, 1024, 1])
+    input_layer = tf.reshape(features["x"], [-1, alphabet_size, 1024, 1])
 
     # Convolutional Layer #1
     conv1 = tf.layers.conv2d(inputs=input_layer, filters=32, kernel_size=[5, 5], padding="same", activation=tf.nn.relu)
