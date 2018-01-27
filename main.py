@@ -10,12 +10,16 @@ alphabet_size = len(EncodeHelper.alphabet_standard)
 
 encoded_messages, scores = PreprocessData.get_encoded_messages()
 
+#t1 = tf.constant(encoded_messages[0:3])
+#sess = tf.Session()
+#result = sess.run(conv1)
+
 def cnn_model_fn(features, labels, mode):
     # Input Layer
-    input_layer = tf.reshape(features["x"], [-1, alphabet_size, 1024, 1])
+    input_layer = tf.reshape(features["x"], [-1, 1024, alphabet_size, 1])
 
     # Convolutional Layer #1
-    conv1 = tf.layers.conv2d(inputs=input_layer, filters=32, kernel_size=[5, 5], padding="same", activation=tf.nn.relu)
+    conv1 = tf.layers.conv2d(inputs=input_layer, filters=32, kernel_size=[5, alphabet_size], padding="same", activation=tf.nn.relu)
 
     # Logits Layer
     logits = tf.layers.dense(inputs=conv1, units=5)

@@ -73,8 +73,8 @@ class EncodeHelper:
         index = 0
 
         for c in alphabet:
-            code_array = [0] * length
-            code_array[index] = 1
+            code_array = [0.0] * length
+            code_array[index] = 1.0
             index += 1
             codes[c] = code_array
 
@@ -84,15 +84,23 @@ class EncodeHelper:
 
 
     @staticmethod
-    def encode_messages(alphabet_dict, filename="data/Grocery_Filtered_1000.json"):
+    def encode_messages(alphabet_dict, filename="data/Grocery_Filtered_1000.json", size=1024):
         texts, summaries, scores = FileHelper.read_data_file(filename, FileHelper.default_filter)
 
         messages = [None] * len(texts)
         encoded_messages = [None] * len(texts)
 
         for i in range(0, len(texts)):
-            messages[i] = "{0}\n{1}".format(summaries[i].upper(), texts[i])
-            encoded_messages[i] = EncodeHelper.encode_to_alphabet(messages[i], alphabet_dict, True)
+            message = "{0}\n{1}".format(summaries[i].upper(), texts[i])
+            if size is not None:
+                if size < len(message):
+                    message = message[:size]
+                else:
+                    spaces = " " * (size - len(message))
+                    message = message + spaces
+
+            messages[i] = message
+            encoded_messages[i] = EncodeHelper.encode_to_alphabet(message, alphabet_dict, True)
 
         return encoded_messages, messages, scores
 
