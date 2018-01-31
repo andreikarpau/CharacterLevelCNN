@@ -4,47 +4,76 @@ from encoders.encode_helper import EncodeHelper
 from helper import FileHelper
 from preprocess_data import PreprocessData
 
+
+def cnn_conv_layer(data_tensor, name):
+    # Input Layer
+    input_layer = tf.reshape(data_tensor, [-1, 1024, alphabet_size, 1])
+    tr_input_layer = tf.transpose(input_layer, perm=[0, 2, 1, 3])
+
+    # setup the filter input shape for tf.nn.conv_2d
+    filter_shape = [alphabet_size, 5]
+    num_input_channels = 1
+    num_filters = 16
+    name = "conv_" + name
+    conv_filt_shape = [filter_shape[0], filter_shape[1], num_input_channels, num_filters]
+
+    # initialise weights and bias for the filter
+    weights = tf.Variable(tf.truncated_normal(conv_filt_shape, stddev=0.03), name=name + '_W')
+    bias = tf.Variable(tf.truncated_normal([num_filters]), name=name + '_b')
+
+    # Convolutional Layer #1
+    out_layer = tf.nn.conv2d(tr_input_layer, filter=weights, strides=[1, alphabet_size, 1, 1], padding='SAME')
+
+    # add the bias
+    out_layer += bias
+    out_layer = tf.nn.relu(out_layer)
+    return out_layer
+
+
+def max_pooling(in_layer):
+    pool_shape = [1, 5]
+
+    ksize = [1, pool_shape[0], pool_shape[1], 1]
+    strides = [1, 1, 2, 1]
+    out_layer = tf.nn.max_pool(in_layer, ksize=ksize, strides=strides, padding='SAME')
+
+    return out_layer
+
+
+def full_connection(in_layer, count_neurons, name):
+    name = "fc_" + name
+
+    wd = tf.Variable(tf.truncated_normal([in_layer.shape[1].value, count_neurons], stddev=0.03), name=name + '_wd')
+    bd = tf.Variable(tf.truncated_normal([count_neurons], stddev=0.01), name=name + 'bd')
+    dense_layer = tf.matmul(in_layer, wd) + bd
+    dense_layer = tf.nn.relu(dense_layer)
+
+    return dense_layer
+
+
+def make_flat(in_layer):
+    return tf.reshape(in_layer, [-1, in_layer.shape[1].value * in_layer.shape[2].value * in_layer.shape[3].value])
+
+
 features = None
+tf.reset_default_graph()
 mode = tf.estimator.ModeKeys.PREDICT
 alphabet_size = len(EncodeHelper.alphabet_standard)
 
 encoded_messages, scores = PreprocessData.get_encoded_messages()
+t1 = tf.constant(encoded_messages[0:3])
+# t1 = tf.zeros(shape=[3, 1024, 69])
+tf.set_random_seed(1234)
 
-#t1 = tf.constant(encoded_messages[0:3])
-#sess = tf.Session()
-#result = sess.run(conv1)
+conv1_layer = cnn_conv_layer(t1, name="1")
+pool1_layer = max_pooling(conv1_layer)
+flat_layer = make_flat(pool1_layer)
+full_connected1 = full_connection(flat_layer, count_neurons=500, name="1")
+full_connected2 = full_connection(full_connected1, count_neurons=100, name="2")
+full_connected3 = full_connection(full_connected2, count_neurons=1, name="3")
 
-def cnn_model_fn(features, labels, mode):
-    # Input Layer
-    input_layer = tf.reshape(features["x"], [-1, 1024, alphabet_size, 1])
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
 
-    # Convolutional Layer #1
-    conv1 = tf.layers.conv2d(inputs=input_layer, filters=32, kernel_size=[5, alphabet_size], padding="same", activation=tf.nn.relu)
+result = sess.run(full_connected3)
 
-    # Logits Layer
-    logits = tf.layers.dense(inputs=conv1, units=5)
-
-    predictions = {
-        # Generate predictions (for PREDICT and EVAL mode)
-        "classes": tf.argmax(input=logits, axis=1),
-        # Add `softmax_tensor` to the graph. It is used for PREDICT and by the
-        # `logging_hook`.
-        "probabilities": tf.nn.softmax(logits, name="softmax_tensor")
-    }
-
-    if mode == tf.estimator.ModeKeys.PREDICT:
-        return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
-
-    # Calculate Loss (for both TRAIN and EVAL modes)
-    onehot_labels = tf.one_hot(indices=tf.cast(labels, tf.int32), depth=5)
-    loss = tf.losses.softmax_cross_entropy(onehot_labels=onehot_labels, logits=logits)
-
-    # Configure the Training Op (for TRAIN mode)
-    if mode == tf.estimator.ModeKeys.TRAIN:
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001)
-        train_op = optimizer.minimize(loss=loss, global_step=tf.train.get_global_step())
-        return tf.estimator.EstimatorSpec(mode=mode, loss=loss, train_op=train_op)
-
-    # Add evaluation metrics (for EVAL mode)
-    eval_metric_ops = {"accuracy": tf.metrics.accuracy(labels=labels, predictions=predictions["classes"])}
-    return tf.estimator.EstimatorSpec(mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
