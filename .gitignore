@@ -4,3 +4,5 @@ glove.6B.50d.txt
 .idea
 __pycache__
 logs/
+data/subsampled/*.json
+data/*.json

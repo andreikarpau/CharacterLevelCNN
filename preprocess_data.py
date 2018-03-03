@@ -1,5 +1,5 @@
 from encoders.encode_helper import EncodeHelper
-from helper import FileHelper
+from preprocess.helper import FileHelper
 import json
 import pickle
 
