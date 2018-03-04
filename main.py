@@ -1,7 +1,7 @@
 import tensorflow as tf
-import cnn
+from neural_network import cnn
 from encoders.encode_helper import EncodeHelper
-from preprocess_data import PreprocessData
+from preprocess.preprocess_helper import PreprocessHelper
 
 #run tensorboard:
 #tensorboard --logdir=logs
@@ -63,7 +63,7 @@ mean_square_error = tf.reduce_mean(error)
 optimiser = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(error)
 
 # Run
-encoded_messages, scores = PreprocessData.get_encoded_messages()
+encoded_messages, scores = PreprocessHelper.get_encoded_messages()
 
 with tf.Session() as sess:
     writer = tf.summary.FileWriter('logs/graph', sess.graph)

@@ -50,7 +50,28 @@ class FileHelper:
         return texts, summaries, overall
 
     @staticmethod
-    def write_messages_to_file(file_name, messages, scores):
+    def read_message_scores_from_file(file_name, max_num=None):
+        texts = []
+        overall = []
+
+        iteration = 0
+        with open(file_name, "r") as json_file:
+            for line in json_file:
+                iteration = iteration + 1
+                if max_num is not None and max_num <= iteration:
+                    break
+
+                str = json.loads(line)
+                review_text = str["text"]
+                score = str["overall"]
+
+                texts.append(review_text)
+                overall.append(score)
+
+        return texts, overall
+
+    @staticmethod
+    def write_message_scores_to_file(file_name, messages, scores):
         with open(file_name, 'w') as f:
             for i, m in enumerate(messages):
                 json.dump({'text': m, 'overall': scores[i]}, f, ensure_ascii=False)

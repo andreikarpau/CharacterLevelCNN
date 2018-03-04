@@ -1,6 +1,6 @@
 from sklearn.model_selection import train_test_split
 
-from preprocess.helper import FileHelper
+from preprocess.file_helper import FileHelper
 import numpy as np
 
 
@@ -36,9 +36,9 @@ def save_subsampled_data(source_file, result_name):
     texts, scores = get_undersampled_majorities(texts, scores)
     texts_train, texts_test, scores_train, scores_test = get_stratified_test_train(texts, scores)
 
-    FileHelper.write_messages_to_file("data/subsampled/{}_train_{}.json".
+    FileHelper.write_message_scores_to_file("data/subsampled/{}_train_{}.json".
                                       format(result_name, len(scores_train)), texts_train, scores_train)
-    FileHelper.write_messages_to_file("data/subsampled/{}_test_{}.json".
+    FileHelper.write_message_scores_to_file("data/subsampled/{}_test_{}.json".
                                       format(result_name, len(scores_test)), texts_test, scores_test)
 
 

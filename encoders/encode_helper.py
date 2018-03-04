@@ -1,37 +1,55 @@
 import json
-from preprocess.helper import FileHelper
+from preprocess.file_helper import FileHelper
 import string
 
 
 class EncodeHelper:
-    @staticmethod
-    def read_encode_review_text(name, alphabet):
-        texts, summaries, scores = FileHelper.read_data_file(name, None)
-
-        results = []
-        for i, val in enumerate(texts):
-            encoded_text = FileHelper.encode_to_alphabet(val, alphabet)
-            new_obj = {'reviewText': encoded_text, 'overall': scores[i]}
-            results.append(new_obj)
-
-        return results
+    alphabet_standard = "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:’/\|_@#$%ˆ&*˜‘+-=<>()[]{}\n"
 
     @staticmethod
-    def get_alphabet(name='alphabets/ascii_printable.json'):
-        with open(name, "r") as json_file:
-            alphabet = json.load(json_file)
-            return alphabet
+    def make_alphabet_encoding(alphabet):
+        codes = {}
+        length = len(alphabet)
+        index = 0
+
+        for c in alphabet:
+            code_array = [0.0] * length
+            code_array[index] = 1.0
+            index += 1
+            codes[c] = code_array
+
+        codes['blank'] = [0] * length
+        codes[' '] = [0] * length
+
+        return codes
 
     @staticmethod
-    def save_ascii_alphabet_to_file(name='alphabets/ascii_printable.json'):
-        printable_chars = string.printable
-        codes = dict()
+    def make_back_alphabet(alphabet):
+        back_alphabet = {}
 
-        for c in printable_chars:
-            codes[c] = list(map(int, (list(bin(int(ord(c)))[2:].zfill(8)))))
+        for char, encoding in alphabet.items():
+            back_alphabet[str(encoding)] = char
 
-        with open(name, 'w') as f:
-            json.dump(codes, f)
+        return back_alphabet
+
+    @staticmethod
+    def encode_messages(alphabet_dict, file_name, to_lower, size=1024, max_num=None):
+        texts, scores = FileHelper.read_message_scores_from_file(file_name, max_num)
+
+        messages = [None] * len(texts)
+        encoded_messages = [None] * len(texts)
+
+        for i in range(0, len(texts)):
+            message = texts[i]
+
+            if size is not None:
+                spaces = " " * (size - len(message))
+                message = message + spaces
+
+            messages[i] = message
+            encoded_messages[i] = EncodeHelper.encode_to_alphabet(message, alphabet_dict, to_lower)
+
+        return encoded_messages, messages, scores
 
     @staticmethod
     def encode_to_alphabet(text, alphabet_dict, to_lower=False):
@@ -52,55 +70,35 @@ class EncodeHelper:
 
         return encoded_list
 
-    # @staticmethod
-    # def encode_from_alphabet(encoded_message, alphabet_dict, to_lower=False):
-    #     for c in encoded_message:
-    #         if c in alphabet_dict:
-    #             encoded_list[i] = alphabet_dict[c]
-    #         else:
-    #             encoded_list[i] = alphabet_dict['blank']
-    #
-    #         i += 1
-    #
-    #     return encoded_list
-
-    alphabet_standard = "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:’/\|_@#$%ˆ&*˜‘+-=<>()[]{}\n"
+    @staticmethod
+    def get_alphabet(name='alphabets/ascii_printable.json'):
+        with open(name, "r") as json_file:
+            alphabet = json.load(json_file)
+            return alphabet
 
     @staticmethod
-    def make_alphabet_encoding(alphabet=alphabet_standard):
-        codes = {}
-        length = len(alphabet)
-        index = 0
+    def save_ascii_alphabet_to_file(name='alphabets/ascii_printable.json'):
+        printable_chars = string.printable
+        codes = dict()
 
-        for c in alphabet:
-            code_array = [0.0] * length
-            code_array[index] = 1.0
-            index += 1
-            codes[c] = code_array
+        for c in printable_chars:
+            codes[c] = list(map(int, (list(bin(int(ord(c)))[2:].zfill(8)))))
 
-        codes[' '] = [0] * length
-        codes['blank'] = [0] * length
-        return codes
-
+        with open(name, 'w') as f:
+            json.dump(codes, f)
 
     @staticmethod
-    def encode_messages(alphabet_dict, filename="data/Grocery_Filtered_1000.json", size=1024):
-        texts, summaries, scores = FileHelper.read_data_file(filename, FileHelper.default_filter)
+    def decode_messages(alphabet, messages):
+        back_alphabet = EncodeHelper.make_back_alphabet(alphabet)
+        decoded_messages = []
 
-        messages = [None] * len(texts)
-        encoded_messages = [None] * len(texts)
+        for message in messages:
+            decoded_message = ""
 
-        for i in range(0, len(texts)):
-            message = "{0}\n{1}".format(summaries[i].upper(), texts[i])
-            if size is not None:
-                if size < len(message):
-                    message = message[:size]
-                else:
-                    spaces = " " * (size - len(message))
-                    message = message + spaces
+            for encoded_char in message:
+                char = back_alphabet[str(encoded_char)]
+                decoded_message += char
 
-            messages[i] = message
-            encoded_messages[i] = EncodeHelper.encode_to_alphabet(message, alphabet_dict, True)
+            decoded_messages.append(decoded_message)
 
-        return encoded_messages, messages, scores
-
+        return decoded_messages
