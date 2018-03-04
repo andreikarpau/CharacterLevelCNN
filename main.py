@@ -9,8 +9,9 @@ from preprocess.preprocess_helper import PreprocessHelper
 #mode = tf.estimator.ModeKeys.PREDICT
 
 # Initialize variables
-VERBOSE = False
-epochs = 60
+VERBOSE = True
+epochs = 1
+batch_size = 1000
 alphabet_size = len(EncodeHelper.alphabet_standard)
 learning_rate = 0.001
 
@@ -63,17 +64,31 @@ mean_square_error = tf.reduce_mean(error)
 optimiser = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(error)
 
 # Run
-encoded_messages, scores = PreprocessHelper.get_encoded_messages()
+train_messages, train_scores = PreprocessHelper.get_encoded_messages("data/encoded/standard/train/Beauty_train_32343.json.pickle")
+test_messages, test_scores = PreprocessHelper.get_encoded_messages("data/encoded/standard/test/Beauty_test_13862.json.pickle")
 
 with tf.Session() as sess:
     writer = tf.summary.FileWriter('logs/graph', sess.graph)
     sess.run(tf.global_variables_initializer())
 
-    for epoch in range(epochs):
-        result = sess.run(optimiser, feed_dict={x_batch: encoded_messages[0:3], y: scores[0:3]})
-        # print("Result: {}".format(result))
+    start_index = 0
+    end_index = batch_size
+    train_length = len(train_messages)
 
-        mse = sess.run(mean_square_error, feed_dict={x_batch: encoded_messages[0:6], y: scores[0:6]})
+    for epoch in range(epochs):
+        while start_index < len(train_messages):
+            if train_length < end_index:
+                end_index = train_length
+
+            print("Epoch {}, Batch {} - {}: ".format(epoch, start_index, end_index))
+            result = sess.run(optimiser, feed_dict={x_batch: train_messages[start_index:end_index],
+                                                    y: train_scores[start_index:end_index]})
+
+            start_index += batch_size
+            end_index += batch_size
+            # print("Result: {}".format(result))
+
+        mse = sess.run(mean_square_error, feed_dict={x_batch: test_messages[0:batch_size], y: test_scores[0:batch_size]})
         print("MSE: {}".format(mse))
 
     writer.close()
