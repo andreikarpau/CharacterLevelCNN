@@ -7,9 +7,37 @@ class EncodeHelper:
     alphabet_standard = "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:’/\|_@#$%ˆ&*˜‘+-=<>()[]{}\n"
 
     @staticmethod
-    def make_alphabet_encoding(alphabet):
+    def make_standart_group_encoding():
+        standart_length = len(EncodeHelper.alphabet_standard)
+        standart_encoding = EncodeHelper.make_alphabet_encoding(EncodeHelper.alphabet_standard, standart_length + 4)
+
+        letters = list(string.ascii_lowercase)
+        for l in letters:
+            code = standart_encoding[l]
+            code[standart_length] = 1.0
+            upper_code = list(code)
+            upper_code[standart_length + 1] = 1.0
+            standart_encoding[l.upper()] = upper_code
+
+        for i in range(0,10):
+            digit = str(i)
+            code = standart_encoding[digit]
+            code[standart_length + 2] = 1.0
+
+        for spec in list("-,;.!?:’/\|_@#$%ˆ&*˜‘+-=<>()[]{}"):
+            code = standart_encoding[spec]
+            code[standart_length + 3] = 1.0
+
+        return standart_encoding
+
+    @staticmethod
+    def make_alphabet_encoding(alphabet, encoding_length=None):
         codes = {}
-        length = len(alphabet)
+
+        length = encoding_length
+        if encoding_length is None:
+            length = len(alphabet)
+
         index = 0
 
         for c in alphabet:
