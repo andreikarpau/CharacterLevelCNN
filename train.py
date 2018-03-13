@@ -2,6 +2,7 @@ import tensorflow as tf
 from neural_network import cnn
 from encoders.encode_helper import EncodeHelper
 from preprocess.preprocess_helper import PreprocessHelper
+import logging
 
 #run tensorboard:
 #tensorboard --logdir=logs
@@ -45,8 +46,17 @@ if VERBOSE:
     pool2_layer = tf.Print(pool2_layer, [conv2_layer, pool2_layer],
                            message="This is conv2_layer, pool2_layer: ")
 
+# Convolutional-max pool 3
+conv3_layer = cnn.cnn_conv_layer(pool2_layer, name="2",
+                                 filter_shape=[1, 3], filters=16, channels=256)
+pool3_layer = cnn.max_pooling(conv3_layer, "2", pool_shape=[1, 3])
+
+if VERBOSE:
+    pool3_layer = tf.Print(pool3_layer, [conv3_layer, pool3_layer],
+                           message="This is conv3_layer, pool3_layer: ")
+
 # Full connection
-flat_layer = cnn.make_flat(pool2_layer)
+flat_layer = cnn.make_flat(pool3_layer)
 
 full_connected1 = cnn.full_connection(flat_layer, count_neurons=500, name="1")
 full_connected2 = cnn.full_connection(full_connected1, count_neurons=100, name="2")
@@ -64,11 +74,18 @@ mean_square_error = tf.reduce_mean(error)
 optimiser = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(error)
 
 # Run
-train_messages, train_scores = PreprocessHelper.get_encoded_messages("data/encoded/standard/train/Beauty_train_32343.json.pickle")
-test_messages, test_scores = PreprocessHelper.get_encoded_messages("data/encoded/standard/test/Beauty_test_13862.json.pickle")
+encoding_name = "standard"
+train_messages, train_scores = PreprocessHelper.get_encoded_messages(
+    "data/encoded/{}/train/Beauty_train_32343.json.pickle".format(encoding_name))
+test_messages, test_scores = PreprocessHelper.get_encoded_messages(
+    "data/encoded/{}/test/Beauty_test_13862.json.pickle".format(encoding_name))
 
-with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
-    writer = tf.summary.FileWriter('logs/graph', sess.graph)
+saver = tf.train.Saver()
+logger = logging.getLogger('train')
+train_log = logging.FileHandler('/logs/{}/train.log'.format(encoding_name))
+
+with tf.Session(config=tf.ConfigProto(log_device_placement=VERBOSE)) as sess:
+    writer = tf.summary.FileWriter('logs/graph/{}/'.format(encoding_name), sess.graph)
     sess.run(tf.global_variables_initializer())
 
     start_index = 0
@@ -89,7 +106,10 @@ with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
             # print("Result: {}".format(result))
 
         mse = sess.run(mean_square_error, feed_dict={x_batch: test_messages[0:batch_size], y: test_scores[0:batch_size]})
-        print("MSE: {}".format(mse))
+        mse_message = "Epoch {} MSE: {}".format(epoch, mse)
+        print(mse_message)
+        logger.info(mse_message)
+        saver.save(sess, "/logs/{}/model_epoch{}.ckpt".format(encoding_name, epoch))
 
     writer.close()
 
