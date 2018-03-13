@@ -67,7 +67,7 @@ optimiser = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(error)
 train_messages, train_scores = PreprocessHelper.get_encoded_messages("data/encoded/standard/train/Beauty_train_32343.json.pickle")
 test_messages, test_scores = PreprocessHelper.get_encoded_messages("data/encoded/standard/test/Beauty_test_13862.json.pickle")
 
-with tf.Session() as sess:
+with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
     writer = tf.summary.FileWriter('logs/graph', sess.graph)
     sess.run(tf.global_variables_initializer())
 
