@@ -47,9 +47,9 @@ if VERBOSE:
                            message="This is conv2_layer, pool2_layer: ")
 
 # Convolutional-max pool 3
-conv3_layer = cnn.cnn_conv_layer(pool2_layer, name="2",
-                                 filter_shape=[1, 3], filters=16, channels=256)
-pool3_layer = cnn.max_pooling(conv3_layer, "2", pool_shape=[1, 3])
+conv3_layer = cnn.cnn_conv_layer(pool2_layer, name="3",
+                                 filter_shape=[1, 3], filters=16, channels=16)
+pool3_layer = cnn.max_pooling(conv3_layer, "3", pool_shape=[1, 3])
 
 if VERBOSE:
     pool3_layer = tf.Print(pool3_layer, [conv3_layer, pool3_layer],
@@ -81,10 +81,15 @@ test_messages, test_scores = PreprocessHelper.get_encoded_messages(
     "data/encoded/{}/test/Beauty_test_13862.json.pickle".format(encoding_name))
 
 saver = tf.train.Saver()
-logger = logging.getLogger('train')
-train_log = logging.FileHandler('/logs/{}/train.log'.format(encoding_name))
 
-with tf.Session(config=tf.ConfigProto(log_device_placement=VERBOSE)) as sess:
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',
+                    filename='./logs/{}/train.log'.format(encoding_name),
+                    filemode='w')
+
+config = tf.ConfigProto(log_device_placement=VERBOSE)
+config.gpu_options.allow_growth = True
+
+with tf.Session(config=config) as sess:
     writer = tf.summary.FileWriter('logs/graph/{}/'.format(encoding_name), sess.graph)
     sess.run(tf.global_variables_initializer())
 
@@ -103,12 +108,13 @@ with tf.Session(config=tf.ConfigProto(log_device_placement=VERBOSE)) as sess:
 
             start_index += batch_size
             end_index += batch_size
-            # print("Result: {}".format(result))
+
 
         mse = sess.run(mean_square_error, feed_dict={x_batch: test_messages[0:batch_size], y: test_scores[0:batch_size]})
         mse_message = "Epoch {} MSE: {}".format(epoch, mse)
         print(mse_message)
-        logger.info(mse_message)
+        logging.info(mse_message)
+
         saver.save(sess, "/logs/{}/model_epoch{}.ckpt".format(encoding_name, epoch))
 
     writer.close()
