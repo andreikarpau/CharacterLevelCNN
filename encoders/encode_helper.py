@@ -1,5 +1,5 @@
 import json
-from preprocess.file_helper import FileHelper
+from helpers.file_helper import FileHelper
 import string
 
 

@@ -6,5 +6,6 @@ __pycache__
 logs/
 data/subsampled/*.json
 data/encoded/**/*.pickle
+*.pyc
 
 data/*.json

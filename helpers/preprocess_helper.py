@@ -1,4 +1,6 @@
-from preprocess.file_helper import FileHelper
+import os
+
+from helpers.file_helper import FileHelper
 import json
 import pickle
 
@@ -23,6 +25,20 @@ class PreprocessHelper:
                 items[i] = {'encodedText': encoding, 'overall': scores[i]}
 
             pickle.dump(items, f, pickle.HIGHEST_PROTOCOL)
+
+    @staticmethod
+    def get_encoded_messages_from_folder(folder_name):
+        files = os.listdir(folder_name)
+
+        all_messages = []
+        all_scores = []
+
+        for f in files:
+            messages, scores = PreprocessHelper.get_encoded_messages(folder_name + "/" + f)
+            all_messages.extend(messages)
+            all_scores.extend(scores)
+
+        return all_messages, all_scores
 
     @staticmethod
     def get_encoded_messages(file_name):
