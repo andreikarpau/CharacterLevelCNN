@@ -45,3 +45,26 @@ def full_connection(in_layer, count_neurons, name):
 
 def make_flat(in_layer):
     return tf.reshape(in_layer, [-1, in_layer.shape[1].value * in_layer.shape[2].value * in_layer.shape[3].value])
+
+
+class CNNRunner:
+    def __init__(self, verbose, batch_size, logger):
+        self.VERBOSE = verbose
+        self.batch_size = batch_size
+        self.logger = logger
+
+    def call_for_each_batch(self, dataset_length, epoch, call_func):
+        start_index = 0
+        end_index = self.batch_size
+
+        while start_index < dataset_length:
+            if dataset_length < end_index:
+                end_index = dataset_length
+
+            if self.VERBOSE:
+                self.logger.info("Epoch {}, Batch {} - {}: ".format(epoch, start_index, end_index, epoch))
+
+            call_func(start_index, end_index, epoch)
+
+            start_index += self.batch_size
+            end_index += self.batch_size

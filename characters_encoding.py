@@ -1,7 +1,7 @@
 import os
 
 from encoders.encode_helper import EncodeHelper
-from preprocess.preprocess_helper import PreprocessHelper
+from helpers.preprocess_helper import PreprocessHelper
 from os.path import basename
 
 
