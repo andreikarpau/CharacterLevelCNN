@@ -25,7 +25,7 @@ dropout = 0.25
 mode = tf.estimator.ModeKeys.TRAIN
 
 # logging
-logger = FileHelper.get_file_console_logger(encoding_name, "train.log")
+logger = FileHelper.get_file_console_logger(encoding_name, "train.log", True)
 
 # Load data
 dataset_length = 0

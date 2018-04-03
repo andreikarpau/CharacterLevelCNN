@@ -81,7 +81,7 @@ class FileHelper:
                 f.write('\n')
 
     @staticmethod
-    def get_file_console_logger(encoding_name, file_name):
+    def get_file_console_logger(encoding_name, file_name, log_to_console):
         log_dir = './logs/{}/'.format(encoding_name)
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
@@ -94,8 +94,9 @@ class FileHelper:
         fileHandler.setFormatter(logFormatter)
         rootLogger.addHandler(fileHandler)
 
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setFormatter(logFormatter)
-        rootLogger.addHandler(consoleHandler)
+        if log_to_console:
+            consoleHandler = logging.StreamHandler()
+            consoleHandler.setFormatter(logFormatter)
+            rootLogger.addHandler(consoleHandler)
 
         return rootLogger
