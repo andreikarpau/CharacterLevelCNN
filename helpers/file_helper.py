@@ -81,8 +81,8 @@ class FileHelper:
                 f.write('\n')
 
     @staticmethod
-    def get_file_console_logger(encoding_name, file_name, log_to_console):
-        log_dir = './logs/{}/'.format(encoding_name)
+    def get_file_console_logger(encoding_name, output_folder, file_name, log_to_console):
+        log_dir = '{}/{}/'.format(output_folder, encoding_name)
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 

@@ -3,6 +3,7 @@
 echo "Set up training configuration"
 
 export USE_WHOLE_DATASET="False"
+export OUTPUT_FOLDER="output"
 export DATA_PATH="data/encoded"
 export ENCODING_NAME="standard"
 export EPOCHS_COUNT=1000

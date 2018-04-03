@@ -1,0 +1,29 @@
+job:
+  name: "train-character-cnn"
+  execution:
+    image: "tensorflow/tensorflow:1.6.0-gpu-py3"
+    command: "./scripts/run_train.sh"
+    completionTime: "10h"
+    resources:
+      cpus: 2
+      memory: 32000
+      gpus: 1
+  env:
+    - name: "USE_WHOLE_DATASET"
+      value: "True"
+    - name: "DATA_PATH"
+      value: "/data/d071506/text_data/encoded"
+    - name: "OUTPUT_FOLDER"
+      value: "/data/d071506/text_cnn/output"
+    - name: "ENCODING_NAME"
+      value: standard
+    - name: "EPOCHS_COUNT"
+      value: 1000
+    - name: "BATCH_SIZE"
+      value: 100
+    - name: "LEARNING_RATE"
+      value: 0.0001
+    - name: "DROPOUT_RATE"
+      value: 0.25
+    - name: "RUN_MODE"
+      value: train

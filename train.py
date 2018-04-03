@@ -19,6 +19,7 @@ alphabet_size = 0
 use_whole_dataset = bool(os.getenv('USE_WHOLE_DATASET', 'False'))
 data_path = os.getenv('DATA_PATH', 'data/encoded')
 encoding_name = os.getenv('ENCODING_NAME', 'standard_group') #'standard', 'standard_group'
+output_folder = os.getenv('OUTPUT_FOLDER', 'output')
 
 if encoding_name == "standard":
     alphabet_size = len(EncodeHelper.alphabet_standard)
@@ -34,7 +35,7 @@ mode_str = os.getenv('RUN_MODE', 'train')
 mode = tf.estimator.ModeKeys.TRAIN if mode_str == 'train' else tf.estimator.ModeKeys.EVAL
 
 # logging
-logger = FileHelper.get_file_console_logger(encoding_name, "train.log", True)
+logger = FileHelper.get_file_console_logger(encoding_name, output_folder, "train.log", True)
 
 # Load data
 dataset_length = 0
@@ -146,13 +147,13 @@ with tf.Session(config=config) as sess:
         logger.info(mse_message)
 
 
-    writer = tf.summary.FileWriter('logs/graph/{}/'.format(encoding_name), sess.graph)
+    writer = tf.summary.FileWriter('{}/graph/{}/'.format(output_folder, encoding_name), sess.graph)
     sess.run(tf.global_variables_initializer())
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         for epoch in range(epochs):
             runner.call_for_each_batch(dataset_length, epoch, run_train)
-            saver.save(sess, "./logs/{}/model_epoch{}.ckpt".format(encoding_name, epoch))
+            saver.save(sess, "{}/{}/model_epoch{}.ckpt".format(output_folder, encoding_name, epoch))
 
     if mode == tf.estimator.ModeKeys.EVAL:
         runner.call_for_each_batch(dataset_length, 0, run_eval)

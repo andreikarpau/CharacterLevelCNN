@@ -3,7 +3,9 @@ glove.6B.50d.txt
 
 .idea
 __pycache__
+/**/__pycache__
 logs/
+output/
 data/subsampled/*.json
 data/encoded/**/*.pickle
 *.pyc
