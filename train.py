@@ -1,3 +1,4 @@
+import os
 import tensorflow as tf
 
 from helpers.file_helper import FileHelper
@@ -12,17 +13,25 @@ from neural_network.cnn import CNNRunner
 
 # Initialize variables
 VERBOSE = False
-# encoding_name = "standard"
-# alphabet_size = len(EncodeHelper.alphabet_standard)
 
-encoding_name = "standard_group"
-alphabet_size = len(EncodeHelper.make_standart_group_encoding()['a'])
+alphabet_size = 0
 
-epochs = 1000
-batch_size = 100
-learning_rate = 0.0001
-dropout = 0.25
-mode = tf.estimator.ModeKeys.TRAIN
+use_whole_dataset = bool(os.getenv('USE_WHOLE_DATASET', 'False'))
+data_path = os.getenv('DATA_PATH', 'data/encoded')
+encoding_name = os.getenv('ENCODING_NAME', 'standard_group') #'standard', 'standard_group'
+
+if encoding_name == "standard":
+    alphabet_size = len(EncodeHelper.alphabet_standard)
+elif encoding_name == "standard_group":
+    alphabet_size = len(EncodeHelper.make_standart_group_encoding()['a'])
+
+epochs = int(os.getenv('EPOCHS_COUNT', 1000))
+batch_size = int(os.getenv('BATCH_SIZE', 100))
+learning_rate = float(os.getenv('LEARNING_RATE', 0.0001))
+dropout = float(os.getenv('DROPOUT_RATE', 0.25))
+
+mode_str = os.getenv('RUN_MODE', 'train')
+mode = tf.estimator.ModeKeys.TRAIN if mode_str == 'train' else tf.estimator.ModeKeys.EVAL
 
 # logging
 logger = FileHelper.get_file_console_logger(encoding_name, "train.log", True)
@@ -31,17 +40,23 @@ logger = FileHelper.get_file_console_logger(encoding_name, "train.log", True)
 dataset_length = 0
 
 if mode == tf.estimator.ModeKeys.TRAIN:
-    train_messages, train_scores = PreprocessHelper.get_encoded_messages(
-        "data/encoded/{}/train/Beauty_train_32343.json.pickle".format(encoding_name))
-    # train_messages, train_scores = PreprocessHelper.get_encoded_messages_from_folder(
-    #     "data/encoded/{}/train".format(encoding_name))
+    if use_whole_dataset:
+        train_messages, train_scores = PreprocessHelper.get_encoded_messages_from_folder(
+            "{}/{}/train".format(data_path, encoding_name))
+    else:
+        train_messages, train_scores = PreprocessHelper.get_encoded_messages(
+            "{}/{}/train/Beauty_train_32343.json.pickle".format(data_path, encoding_name))
+
     dataset_length = len(train_messages)
 
 if mode == tf.estimator.ModeKeys.EVAL:
-    test_messages, test_scores = PreprocessHelper.get_encoded_messages(
-        "data/encoded/{}/test/Beauty_test_13862.json.pickle".format(encoding_name))
-    # test_messages, test_scores = PreprocessHelper.get_encoded_messages_from_folder(
-    #     "data/encoded/{}/test".format(encoding_name))
+    if use_whole_dataset:
+        test_messages, test_scores = PreprocessHelper.get_encoded_messages_from_folder(
+            "{}/{}/test".format(data_path, encoding_name))
+    else:
+        test_messages, test_scores = PreprocessHelper.get_encoded_messages(
+            "{}/{}/test/Beauty_test_13862.json.pickle".format(data_path, encoding_name))
+
     dataset_length = len(test_messages)
 
 # Initialize graph
