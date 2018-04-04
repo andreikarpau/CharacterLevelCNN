@@ -3,7 +3,7 @@ job:
   execution:
     image: "tensorflow/tensorflow:1.6.0-gpu-py3"
     command: "./scripts/run_train.sh"
-    completionTime: "10h"
+    completionTime: "20h"
     resources:
       cpus: 2
       memory: 32000
@@ -18,9 +18,9 @@ job:
     - name: "ENCODING_NAME"
       value: standard
     - name: "EPOCHS_COUNT"
-      value: 1000
+      value: 50
     - name: "BATCH_SIZE"
-      value: 100
+      value: 1000
     - name: "LEARNING_RATE"
       value: 0.0001
     - name: "DROPOUT_RATE"

@@ -9,5 +9,5 @@ output/
 data/subsampled/*.json
 data/encoded/**/*.pickle
 *.pyc
-
+train_submit
 data/*.json
