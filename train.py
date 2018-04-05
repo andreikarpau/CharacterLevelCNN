@@ -1,3 +1,4 @@
+import math
 import os
 import tensorflow as tf
 
@@ -18,7 +19,9 @@ alphabet_size = 0
 
 use_whole_dataset = bool(os.getenv('USE_WHOLE_DATASET', 'False'))
 data_path = os.getenv('DATA_PATH', 'data/encoded')
-encoding_name = os.getenv('ENCODING_NAME', 'standard_group') #'standard', 'standard_group'
+
+# current options: 'standard', 'standard_group'
+encoding_name = os.getenv('ENCODING_NAME', 'standard_group')
 output_folder = os.getenv('OUTPUT_FOLDER', 'output')
 
 if encoding_name == "standard":
@@ -41,6 +44,9 @@ logger = FileHelper.get_file_console_logger(encoding_name, output_folder, "train
 dataset_length = 0
 
 if mode == tf.estimator.ModeKeys.TRAIN:
+    test_messages, test_scores = PreprocessHelper.get_encoded_messages(
+        "{}/{}/test/Beauty_test_13862.json.pickle".format(data_path, encoding_name))
+
     if use_whole_dataset:
         train_messages, train_scores = PreprocessHelper.get_encoded_messages_from_folder(
             "{}/{}/train".format(data_path, encoding_name))
@@ -65,6 +71,9 @@ tf.reset_default_graph()
 tf.set_random_seed(111)
 
 # Initialize inputs
+eval_errors = {"sum": 0, "count": 0}
+is_train = tf.Variable(True)
+
 y = tf.placeholder(tf.float32, [None], name="y")
 y_batch = tf.reshape(y, [-1, 1], name="y_batch")
 x_batch = tf.placeholder(tf.float32, [None, 1024, alphabet_size], name="x_batch")
@@ -102,12 +111,12 @@ if VERBOSE:
 # Full connection
 # flat_layer = cnn.make_flat(pool2_layer)
 flat_layer = cnn.make_flat(pool3_layer)
-
-dropout_layer = tf.layers.dropout(flat_layer, rate=dropout, training=(mode == tf.estimator.ModeKeys.TRAIN))
-
-full_connected1 = cnn.full_connection(dropout_layer, count_neurons=500, name="1")
-full_connected2 = cnn.full_connection(full_connected1, count_neurons=100, name="2")
-full_connected3 = cnn.full_connection(full_connected2, count_neurons=1, name="3")
+dropout_layer1 = tf.layers.dropout(flat_layer, rate=dropout, training=is_train)
+full_connected1 = cnn.full_connection(dropout_layer1, count_neurons=500, name="1")
+dropout_layer2 = tf.layers.dropout(full_connected1, rate=dropout, training=is_train)
+full_connected2 = cnn.full_connection(dropout_layer2, count_neurons=100, name="2")
+dropout_layer3 = tf.layers.dropout(full_connected2, rate=dropout, training=is_train)
+full_connected3 = cnn.full_connection(dropout_layer3, count_neurons=1, name="3")
 
 if VERBOSE:
     full_connected3 = tf.Print(full_connected3,
@@ -117,6 +126,8 @@ if VERBOSE:
 # Optimization
 diff = tf.subtract(full_connected3, y_batch)
 error = tf.square(diff)
+error_sum = tf.reduce_sum(error)
+
 mean_square_error = tf.reduce_mean(error)
 root_mean_square_error = tf.sqrt(mean_square_error)
 
@@ -132,19 +143,27 @@ runner = CNNRunner(VERBOSE, batch_size, logger)
 
 with tf.Session(config=config) as sess:
     def run_train(start_index, end_index, epoch):
+        is_train.load(True, sess)
         sess.run(optimiser, feed_dict={x_batch: train_messages[start_index:end_index],
                                        y: train_scores[start_index:end_index]})
+
+        is_train.load(False, sess)
         batch_rmse = sess.run(root_mean_square_error, feed_dict={x_batch: train_messages[start_index:end_index],
                                                                  y: train_scores[start_index:end_index]})
-        logger.info("Epoch {}, Batch {} - {}: RMSE = {}".format(epoch, start_index, end_index, batch_rmse))
+        logger.info("Train Epoch {}, Batch {} - {}: RMSE = {}".format(epoch, start_index, end_index, batch_rmse))
 
     def run_eval(start_index, end_index, epoch):
-        # TODO Should be finished
-        squared_error = sess.run(error, feed_dict=
+        is_train.load(False, sess)
+        squared_error_sum = sess.run(error_sum, feed_dict=
         {x_batch: test_messages[start_index:end_index], y: test_scores[start_index:end_index]})
+        count = end_index - start_index
 
-        mse_message = "Epoch {} Squared Error: {}".format(epoch, squared_error)
-        logger.info(mse_message)
+        eval_errors["sum"] = eval_errors["sum"] + squared_error_sum
+        eval_errors["count"] = eval_errors["count"] + count
+
+        batch_rmse = math.sqrt(squared_error_sum/count)
+
+        logger.info("Eval Epoch {}, Batch {} - {}: RMSE = {}".format(epoch, start_index, end_index, batch_rmse))
 
 
     writer = tf.summary.FileWriter('{}/graph/{}/'.format(output_folder, encoding_name), sess.graph)
@@ -155,7 +174,11 @@ with tf.Session(config=config) as sess:
             runner.call_for_each_batch(dataset_length, epoch, run_train)
             saver.save(sess, "{}/{}/model_epoch{}.ckpt".format(output_folder, encoding_name, epoch))
 
+            run_eval(0, batch_size * 5, epoch)
+
     if mode == tf.estimator.ModeKeys.EVAL:
         runner.call_for_each_batch(dataset_length, 0, run_eval)
+        total_rmse = math.sqrt(eval_errors["sum"] / eval_errors["count"])
+        logger.info("Eval Total RMSE = {}".format(total_rmse))
 
     writer.close()
