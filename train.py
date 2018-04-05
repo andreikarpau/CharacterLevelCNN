@@ -180,7 +180,7 @@ with tf.Session(config=config) as sess:
         for epoch in range(epochs):
             runner.call_for_each_batch(dataset_length, epoch, run_train)
             saver.save(sess, "{}/model_epoch{}.ckpt".format(checkpoints_dir, epoch))
-            run_eval(0, batch_size * 5, epoch)
+            run_eval(0, batch_size, epoch)
 
     if mode == tf.estimator.ModeKeys.EVAL:
         runner.call_for_each_batch(dataset_length, 0, run_eval)
