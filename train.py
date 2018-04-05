@@ -22,12 +22,15 @@ data_path = os.getenv('DATA_PATH', 'data/encoded')
 
 # current options: 'standard', 'standard_group'
 encoding_name = os.getenv('ENCODING_NAME', 'standard_group')
+output_postfix = os.getenv('OUTPUT_POSTFIX', 'run_1')
 output_folder = os.getenv('OUTPUT_FOLDER', 'output')
 
 if encoding_name == "standard":
     alphabet_size = len(EncodeHelper.alphabet_standard)
 elif encoding_name == "standard_group":
     alphabet_size = len(EncodeHelper.make_standart_group_encoding()['a'])
+
+full_output_name = "{}_{}".format(encoding_name, output_postfix)
 
 epochs = int(os.getenv('EPOCHS_COUNT', 1000))
 batch_size = int(os.getenv('BATCH_SIZE', 100))
@@ -38,7 +41,7 @@ mode_str = os.getenv('RUN_MODE', 'train')
 mode = tf.estimator.ModeKeys.TRAIN if mode_str == 'train' else tf.estimator.ModeKeys.EVAL
 
 # logging
-logger = FileHelper.get_file_console_logger(encoding_name, output_folder, "train.log", True)
+logger = FileHelper.get_file_console_logger(full_output_name, output_folder, "train.log", True)
 
 # Load data
 dataset_length = 0
@@ -142,7 +145,7 @@ config.gpu_options.allow_growth = True
 runner = CNNRunner(VERBOSE, batch_size, logger)
 
 with tf.Session(config=config) as sess:
-    def run_train(start_index, end_index, epoch):
+    def run_train(start_index, end_index, epoch_num):
         is_train.load(True, sess)
         sess.run(optimiser, feed_dict={x_batch: train_messages[start_index:end_index],
                                        y: train_scores[start_index:end_index]})
@@ -150,12 +153,12 @@ with tf.Session(config=config) as sess:
         is_train.load(False, sess)
         batch_rmse = sess.run(root_mean_square_error, feed_dict={x_batch: train_messages[start_index:end_index],
                                                                  y: train_scores[start_index:end_index]})
-        logger.info("Train Epoch {}, Batch {} - {}: RMSE = {}".format(epoch, start_index, end_index, batch_rmse))
+        logger.info("Train Epoch {}, Batch {} - {}: RMSE = {}".format(epoch_num, start_index, end_index, batch_rmse))
 
-    def run_eval(start_index, end_index, epoch):
+    def run_eval(start_index, end_index, epoch_num):
         is_train.load(False, sess)
-        squared_error_sum = sess.run(error_sum, feed_dict=
-        {x_batch: test_messages[start_index:end_index], y: test_scores[start_index:end_index]})
+        squared_error_sum = sess.run(error_sum, feed_dict={x_batch: test_messages[start_index:end_index],
+                                                           y: test_scores[start_index:end_index]})
         count = end_index - start_index
 
         eval_errors["sum"] = eval_errors["sum"] + squared_error_sum
@@ -163,16 +166,16 @@ with tf.Session(config=config) as sess:
 
         batch_rmse = math.sqrt(squared_error_sum/count)
 
-        logger.info("Eval Epoch {}, Batch {} - {}: RMSE = {}".format(epoch, start_index, end_index, batch_rmse))
+        logger.info("Eval Epoch {}, Batch {} - {}: RMSE = {}".format(epoch_num, start_index, end_index, batch_rmse))
 
 
-    writer = tf.summary.FileWriter('{}/graph/{}/'.format(output_folder, encoding_name), sess.graph)
+    writer = tf.summary.FileWriter('{}/graph/{}/'.format(output_folder, full_output_name), sess.graph)
     sess.run(tf.global_variables_initializer())
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         for epoch in range(epochs):
             runner.call_for_each_batch(dataset_length, epoch, run_train)
-            saver.save(sess, "{}/{}/model_epoch{}.ckpt".format(output_folder, encoding_name, epoch))
+            saver.save(sess, "{}/checkpoints/{}/model_epoch{}.ckpt".format(output_folder, full_output_name, epoch))
 
             run_eval(0, batch_size * 5, epoch)
 

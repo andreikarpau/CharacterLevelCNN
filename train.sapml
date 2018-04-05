@@ -9,6 +9,8 @@ job:
       memory: 32000
       gpus: 1
   env:
+    - name: "OUTPUT_POSTFIX"
+      value: "run_1"
     - name: "USE_WHOLE_DATASET"
       value: "True"
     - name: "DATA_PATH"
