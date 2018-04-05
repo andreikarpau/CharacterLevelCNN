@@ -173,10 +173,13 @@ with tf.Session(config=config) as sess:
     sess.run(tf.global_variables_initializer())
 
     if mode == tf.estimator.ModeKeys.TRAIN:
+        checkpoints_dir = "{}/checkpoints/{}".format(output_folder, full_output_name)
+        if not os.path.exists(checkpoints_dir):
+            os.makedirs(checkpoints_dir)
+
         for epoch in range(epochs):
             runner.call_for_each_batch(dataset_length, epoch, run_train)
-            saver.save(sess, "{}/checkpoints/{}/model_epoch{}.ckpt".format(output_folder, full_output_name, epoch))
-
+            saver.save(sess, "{}/model_epoch{}.ckpt".format(checkpoints_dir, epoch))
             run_eval(0, batch_size * 5, epoch)
 
     if mode == tf.estimator.ModeKeys.EVAL:
