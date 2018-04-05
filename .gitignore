@@ -6,6 +6,8 @@ __pycache__
 /**/__pycache__
 logs/
 output/
+deploy
+deploy/
 data/subsampled/*.json
 data/encoded/**/*.pickle
 *.pyc
