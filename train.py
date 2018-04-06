@@ -17,13 +17,14 @@ VERBOSE = False
 
 alphabet_size = 0
 
-use_whole_dataset = bool(os.getenv('USE_WHOLE_DATASET', 'False'))
+use_whole_dataset = os.getenv('USE_WHOLE_DATASET', 'False').lower() == "true"
 data_path = os.getenv('DATA_PATH', 'data/encoded')
 
 # current options: 'standard', 'standard_group'
-encoding_name = os.getenv('ENCODING_NAME', 'standard_group')
-output_postfix = os.getenv('OUTPUT_POSTFIX', 'run_1')
+encoding_name = os.getenv('ENCODING_NAME', 'standard')
+output_postfix = os.getenv('OUTPUT_POSTFIX', 'example_run')
 output_folder = os.getenv('OUTPUT_FOLDER', 'output')
+restore_checkpoint_path = os.getenv('RESTORE_CHECKPOINT_PATH', '')
 
 if encoding_name == "standard":
     alphabet_size = len(EncodeHelper.alphabet_standard)
@@ -41,7 +42,7 @@ mode_str = os.getenv('RUN_MODE', 'train')
 mode = tf.estimator.ModeKeys.TRAIN if mode_str == 'train' else tf.estimator.ModeKeys.EVAL
 
 # logging
-logger = FileHelper.get_file_console_logger(full_output_name, output_folder, "train.log", True)
+logger = FileHelper.get_file_console_logger(full_output_name, output_folder, "{}.log".format(mode_str), True)
 
 # Load data
 dataset_length = 0
@@ -169,11 +170,15 @@ with tf.Session(config=config) as sess:
         logger.info("Eval Epoch {}, Batch {} - {}: RMSE = {}".format(epoch_num, start_index, end_index, batch_rmse))
 
 
-    writer = tf.summary.FileWriter('{}/graph/{}/'.format(output_folder, full_output_name), sess.graph)
     sess.run(tf.global_variables_initializer())
 
+    if restore_checkpoint_path:
+        saver.restore(sess, restore_checkpoint_path)
+
     if mode == tf.estimator.ModeKeys.TRAIN:
+        writer = tf.summary.FileWriter('{}/graph/{}/'.format(output_folder, full_output_name), sess.graph)
         checkpoints_dir = "{}/checkpoints/{}".format(output_folder, full_output_name)
+
         if not os.path.exists(checkpoints_dir):
             os.makedirs(checkpoints_dir)
 
@@ -182,9 +187,10 @@ with tf.Session(config=config) as sess:
             saver.save(sess, "{}/model_epoch{}.ckpt".format(checkpoints_dir, epoch))
             run_eval(0, batch_size, epoch)
 
+        writer.close()
+
     if mode == tf.estimator.ModeKeys.EVAL:
         runner.call_for_each_batch(dataset_length, 0, run_eval)
         total_rmse = math.sqrt(eval_errors["sum"] / eval_errors["count"])
         logger.info("Eval Total RMSE = {}".format(total_rmse))
 
-    writer.close()

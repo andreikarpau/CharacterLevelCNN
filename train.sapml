@@ -29,3 +29,6 @@ job:
       value: 0.25
     - name: "RUN_MODE"
       value: train
+    - name: "RESTORE_CHECKPOINT_PATH"
+      value: ""
+#      value: "/data/d071506/text_cnn/output/checkpoints/standard_run_1/model_epoch49.ckpt"
