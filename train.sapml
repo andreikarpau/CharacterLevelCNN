@@ -18,7 +18,7 @@ job:
     - name: "OUTPUT_FOLDER"
       value: "/data/d071506/text_cnn/output"
     - name: "ENCODING_NAME"
-      value: standard
+      value: "standard"
     - name: "EPOCHS_COUNT"
       value: 50
     - name: "BATCH_SIZE"
@@ -28,7 +28,7 @@ job:
     - name: "DROPOUT_RATE"
       value: 0.25
     - name: "RUN_MODE"
-      value: train
+      value: "train"
     - name: "RESTORE_CHECKPOINT_PATH"
       value: ""
 #      value: "/data/d071506/text_cnn/output/checkpoints/standard_run_1/model_epoch49.ckpt"
