@@ -1,4 +1,3 @@
-import json
 from helpers.file_helper import FileHelper
 import string
 
@@ -52,6 +51,57 @@ class EncodeHelper:
         return codes
 
     @staticmethod
+    def make_ascii_encoding(encoding_length=None):
+        printable_chars = string.printable
+        codes = dict()
+        ascii_length = 8
+        desired_length_diff = 0
+
+        if encoding_length is not None:
+            desired_length_diff = encoding_length - ascii_length
+
+        if desired_length_diff < 0:
+            raise Exception("encoding_length cannot be less than {}".format(ascii_length))
+
+        for c in printable_chars:
+            code = list(map(float, (list(bin(int(ord(c)))[2:].zfill(ascii_length)))))
+            if 0 < desired_length_diff:
+                code.extend([0.0] * desired_length_diff)
+
+            codes[c] = code
+
+        codes['blank'] = [0.0] * len(codes["a"])
+        return codes
+
+    @staticmethod
+    def make_ascii_group_encoding():
+        ascii_length = 8
+        ascii_encoding = EncodeHelper.make_ascii_encoding(ascii_length + 4)
+
+        ascii_lowercase = list(string.ascii_lowercase)
+
+        for l in ascii_lowercase:
+            code = ascii_encoding[l]
+            code[ascii_length] = 1.0
+            upper_code = list(code)
+            upper_code[ascii_length + 1] = 1.0
+            ascii_encoding[l.upper()] = upper_code
+
+        ascii_digits = list(string.digits)
+
+        for digit in ascii_digits:
+            code = ascii_encoding[digit]
+            code[ascii_length + 2] = 1.0
+
+        ascii_uppercase = list(string.punctuation)
+
+        for spec in ascii_uppercase:
+            code = ascii_encoding[spec]
+            code[ascii_length + 3] = 1.0
+
+        return ascii_encoding
+
+    @staticmethod
     def make_back_alphabet(alphabet):
         back_alphabet = {}
 
@@ -97,23 +147,6 @@ class EncodeHelper:
             i += 1
 
         return encoded_list
-
-    @staticmethod
-    def get_alphabet(name='alphabets/ascii_printable.json'):
-        with open(name, "r") as json_file:
-            alphabet = json.load(json_file)
-            return alphabet
-
-    @staticmethod
-    def save_ascii_alphabet_to_file(name='alphabets/ascii_printable.json'):
-        printable_chars = string.printable
-        codes = dict()
-
-        for c in printable_chars:
-            codes[c] = list(map(int, (list(bin(int(ord(c)))[2:].zfill(8)))))
-
-        with open(name, 'w') as f:
-            json.dump(codes, f)
 
     @staticmethod
     def decode_messages(alphabet, messages):
