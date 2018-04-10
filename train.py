@@ -20,8 +20,8 @@ alphabet_size = 0
 use_whole_dataset = os.getenv('USE_WHOLE_DATASET', 'False').lower() == "true"
 data_path = os.getenv('DATA_PATH', 'data/encoded')
 
-# current options: 'standard', 'standard_group'
-encoding_name = os.getenv('ENCODING_NAME', 'standard')
+# current options: 'standard', 'standard_group', 'ascii', 'ascii_group'
+encoding_name = os.getenv('ENCODING_NAME', 'ascii_group')
 output_postfix = os.getenv('OUTPUT_POSTFIX', 'example_run')
 output_folder = os.getenv('OUTPUT_FOLDER', 'output')
 restore_checkpoint_path = os.getenv('RESTORE_CHECKPOINT_PATH', '')
@@ -30,6 +30,10 @@ if encoding_name == "standard":
     alphabet_size = len(EncodeHelper.alphabet_standard)
 elif encoding_name == "standard_group":
     alphabet_size = len(EncodeHelper.make_standart_group_encoding()['a'])
+elif encoding_name == "ascii":
+    alphabet_size = len(EncodeHelper.make_ascii_encoding()['a'])
+elif encoding_name == "ascii_group":
+    alphabet_size = len(EncodeHelper.make_ascii_group_encoding()['a'])
 
 full_output_name = "{}_{}".format(encoding_name, output_postfix)
 
