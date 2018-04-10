@@ -33,32 +33,43 @@ def encode_and_store(alphabet, test_folder, train_folder, to_lower):
     alphabet_encode_and_store("data/subsampled/Phones_train_32420.json", train_folder, alphabet, to_lower=to_lower)
 
 
-# #-----------Standart Encoding-------------
-#
-# alphabet = EncodeHelper.make_alphabet_encoding(alphabet=EncodeHelper.alphabet_standard)
-# test_folder = "data/encoded/standard/test/"
-# train_folder = "data/encoded/standard/train/"
-# encode_and_store(alphabet, test_folder, train_folder, True)
-#
-# #-----------Standart Group Encoding-------------
-#
-# alphabet = EncodeHelper.make_standart_group_encoding()
-# test_folder = "data/encoded/standard_group/test/"
-# train_folder = "data/encoded/standard_group/train/"
-# encode_and_store(alphabet, test_folder, train_folder, False)
-#
-# #-----------ASCII Encoding-------------
-#
-# alphabet = EncodeHelper.make_ascii_encoding()
-# print(alphabet)
-# test_folder = "data/encoded/ascii/test/"
-# train_folder = "data/encoded/ascii/train/"
-# encode_and_store(alphabet, test_folder, train_folder, False)
+#-----------Standart Encoding-------------
+
+alphabet = EncodeHelper.make_alphabet_encoding(alphabet=EncodeHelper.alphabet_standard)
+test_folder = "data/encoded/standard/test/"
+train_folder = "data/encoded/standard/train/"
+encode_and_store(alphabet, test_folder, train_folder, True)
+
+#-----------Standart Group Encoding-------------
+
+alphabet = EncodeHelper.make_standart_group_encoding()
+test_folder = "data/encoded/standard_group/test/"
+train_folder = "data/encoded/standard_group/train/"
+encode_and_store(alphabet, test_folder, train_folder, False)
+
+#-----------ASCII Encoding-------------
+
+alphabet = EncodeHelper.make_ascii_encoding()
+print(alphabet)
+test_folder = "data/encoded/ascii/test/"
+train_folder = "data/encoded/ascii/train/"
+encode_and_store(alphabet, test_folder, train_folder, False)
+
+#-----------ASCII Group Encoding-------------
+
+alphabet = EncodeHelper.make_ascii_group_encoding()
+print(alphabet)
+test_folder = "data/encoded/ascii_group/test/"
+train_folder = "data/encoded/ascii_group/train/"
+encode_and_store(alphabet, test_folder, train_folder, False)
 
 #-----------Verify Group Encoding-------------
 
-messages, _ = PreprocessHelper.get_encoded_messages("data/encoded/ascii/test/Beauty_test_13862.json.pickle")
-decoded = EncodeHelper.decode_messages(EncodeHelper.make_ascii_encoding(), messages)
+encoding_name = "ascii"
+alphabet = EncodeHelper.make_ascii_encoding()
+
+messages, _ = PreprocessHelper.get_encoded_messages("data/encoded/{}/test/Beauty_test_13862.json.pickle".format(encoding_name))
+decoded = EncodeHelper.decode_messages(alphabet, messages)
 print(decoded[0])
 print("---------------------------------------")
 print(decoded[10:30])
