@@ -79,7 +79,7 @@ tf.reset_default_graph()
 tf.set_random_seed(111)
 
 # Initialize inputs
-eval_errors = {"sum": 0, "count": 0}
+eval_results = {"sum": 0, "count": 0, "predicted": [], "actual": []}
 is_train = tf.Variable(True)
 
 y = tf.placeholder(tf.float32, [None], name="y")
@@ -162,12 +162,15 @@ with tf.Session(config=config) as sess:
 
     def run_eval(start_index, end_index, epoch_num):
         is_train.load(False, sess)
-        squared_error_sum = sess.run(error_sum, feed_dict={x_batch: test_messages[start_index:end_index],
-                                                           y: test_scores[start_index:end_index]})
+        squared_error_sum, predicted = sess.run([error_sum, full_connected3],
+                                                feed_dict={x_batch: test_messages[start_index:end_index],
+                                                y: test_scores[start_index:end_index]})
         count = end_index - start_index
 
-        eval_errors["sum"] = eval_errors["sum"] + squared_error_sum
-        eval_errors["count"] = eval_errors["count"] + count
+        eval_results["sum"] = eval_results["sum"] + squared_error_sum
+        eval_results["count"] = eval_results["count"] + count
+        eval_results["predicted"].extend(predicted)
+        eval_results["actual"].extend(test_scores[start_index:end_index])
 
         batch_rmse = math.sqrt(squared_error_sum/count)
 
@@ -195,6 +198,10 @@ with tf.Session(config=config) as sess:
 
     if mode == tf.estimator.ModeKeys.EVAL:
         runner.call_for_each_batch(dataset_length, 0, run_eval)
-        total_rmse = math.sqrt(eval_errors["sum"] / eval_errors["count"])
+        total_rmse = math.sqrt(eval_results["sum"] / eval_results["count"])
         logger.info("Eval Total RMSE = {}".format(total_rmse))
+
+        eval_score_dir = "{}/eval/{}/score.json".format(output_folder, full_output_name)
+        FileHelper.write_predictions_to_file(eval_score_dir, eval_results["predicted"], eval_results["actual"])
+
 

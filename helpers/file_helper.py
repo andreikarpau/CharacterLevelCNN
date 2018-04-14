@@ -81,6 +81,16 @@ class FileHelper:
                 f.write('\n')
 
     @staticmethod
+    def write_predictions_to_file(file_name, predicted, actual):
+        if not os.path.exists(os.path.dirname(file_name)):
+            os.makedirs(os.path.dirname(file_name))
+
+        with open(file_name, 'w') as f:
+            for i, p in enumerate(predicted):
+                json.dump({'predicted': str(p[0]), 'actual': str(actual[i])}, f, ensure_ascii=False)
+                f.write('\n')
+
+    @staticmethod
     def get_file_console_logger(encoding_name, output_folder, file_name, log_to_console):
         log_dir = '{}/logs/{}/'.format(output_folder, encoding_name)
         if not os.path.exists(log_dir):
