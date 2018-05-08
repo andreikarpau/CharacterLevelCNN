@@ -59,10 +59,16 @@ class LogsAnalyzer:
     def get_compared_scores(score_file_name):
         scores = LogsAnalyzer.parse_score(score_file_name)
 
+        scores_actual = []
+        scores_predict = []
+
+        scores_actual_binary = []
+        scores_predict_binary = []
+
         for s in scores:
             actual = s["actual"]
             predicted = s["predicted"]
-            s["predicted_positive"] = 3.5 < predicted
+            s["predicted_positive"] = 3.0 < predicted
 
             if predicted <= 1.5:
                 predicted_rate = 1.0
@@ -78,7 +84,14 @@ class LogsAnalyzer:
             s["predicted_rate"] = predicted_rate
             s["prediction_right"] = predicted_rate == actual
 
-        return scores
+            scores_actual.append(actual)
+            scores_predict.append(predicted_rate)
+
+            if actual != 3.0:
+                scores_actual_binary.append(3.0 < actual)
+                scores_predict_binary.append(3.0 < predicted)
+
+        return scores, scores_actual, scores_predict, scores_actual_binary, scores_predict_binary
 
 
 

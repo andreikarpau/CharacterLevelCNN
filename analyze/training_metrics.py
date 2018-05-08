@@ -36,12 +36,14 @@ def build_training_rmse_charts():
     plot_name = "ASCII"
     log_files = ["data/models/logs/ascii_run_1/train.log",
                  "data/models/logs/ascii_run_1_2/train.log",
-                 "data/models/logs/ascii_run_1_3/train.log"]
+                 "data/models/logs/ascii_run_1_3/train.log",
+                 "data/models/logs/ascii_run_1_4/train.log"]
     _generate_training_rmse_chart(plot_name, log_files)
 
     # ascii_group_run
     plot_name = "ASCII Group"
     log_files = ["data/models/logs/ascii_group_run_1/train.log",
                  "data/models/logs/ascii_group_run_1_2/train.log",
-                 "data/models/logs/ascii_group_run_1_3/train.log"]
+                 "data/models/logs/ascii_group_run_1_3/train.log",
+                 "data/models/logs/ascii_group_run_1_4/train.log"]
     _generate_training_rmse_chart(plot_name, log_files)

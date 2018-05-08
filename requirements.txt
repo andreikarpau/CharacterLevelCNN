@@ -1,2 +1,4 @@
 tensorflow
 logging
+matplotlib
+pandas_ml
