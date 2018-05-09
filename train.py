@@ -26,6 +26,9 @@ output_postfix = os.getenv('OUTPUT_POSTFIX', 'example_run')
 output_folder = os.getenv('OUTPUT_FOLDER', 'output')
 restore_checkpoint_path = os.getenv('RESTORE_CHECKPOINT_PATH', '')
 
+extended_mode = os.getenv('EXTENDED_MODE', 'False').lower() == "true"
+
+
 if encoding_name == "standard":
     alphabet_size = len(EncodeHelper.alphabet_standard)
 elif encoding_name == "standard_group":
@@ -90,8 +93,12 @@ x_batch_4 = tf.reshape(x_batch, [-1, 1024, alphabet_size, 1])
 x_batch_input = tf.transpose(x_batch_4, perm=[0, 2, 1, 3])
 
 # Convolutional-max pool 1
+layer1_filters = 128
+if extended_mode:
+    layer1_filters = layer1_filters * 9
+
 conv1_layer = cnn.cnn_conv_layer(x_batch_input, name="1",
-                                 filter_shape=[alphabet_size, 5], filters=128, channels=1)
+                                 filter_shape=[alphabet_size, 5], filters=layer1_filters, channels=1)
 pool1_layer = cnn.max_pooling(conv1_layer, "1", pool_shape=[1, 5])
 
 if VERBOSE:
@@ -100,7 +107,7 @@ if VERBOSE:
 
 # Convolutional-max pool 2
 conv2_layer = cnn.cnn_conv_layer(pool1_layer, name="2",
-                                 filter_shape=[1, 5], filters=256, channels=128)
+                                 filter_shape=[1, 5], filters=256, channels=layer1_filters)
 pool2_layer = cnn.max_pooling(conv2_layer, "2", pool_shape=[1, 5])
 
 if VERBOSE:
