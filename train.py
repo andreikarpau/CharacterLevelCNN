@@ -42,6 +42,8 @@ full_output_name = "{}_{}".format(encoding_name, output_postfix)
 
 epochs = int(os.getenv('EPOCHS_COUNT', 1000))
 batch_size = int(os.getenv('BATCH_SIZE', 100))
+train_eval_batch_size = int(os.getenv('TRAIN_EVAL_BATCH_SIZE', 1000))
+
 learning_rate = float(os.getenv('LEARNING_RATE', 0.0001))
 dropout = float(os.getenv('DROPOUT_RATE', 0.25))
 
@@ -199,7 +201,7 @@ with tf.Session(config=config) as sess:
         for epoch in range(epochs):
             runner.call_for_each_batch(dataset_length, epoch, run_train)
             saver.save(sess, "{}/model_epoch{}.ckpt".format(checkpoints_dir, epoch))
-            run_eval(0, batch_size, epoch)
+            run_eval(0, train_eval_batch_size, epoch)
 
         writer.close()
 
