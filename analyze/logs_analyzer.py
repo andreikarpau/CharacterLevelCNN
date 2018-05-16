@@ -1,5 +1,7 @@
 import json
 import re
+from datetime import datetime
+from datetime import timedelta
 
 
 class LogsAnalyzer:
@@ -8,11 +10,15 @@ class LogsAnalyzer:
         train_log_re = re.compile(".* INFO Train .*")
         eval_log_re = re.compile(".* INFO Eval .*")
         rmse_re = re.compile(".* RMSE = ?([0-9]*[.][0-9]+)")
+        date_time = re.compile("(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})")
 
         train_results = []
         eval_results = []
 
         with open(file_name, "r") as logs_file:
+            first_line = None
+            last_line = None
+
             for line in logs_file:
                 search_res = rmse_re.search(line)
                 if search_res is None:
@@ -25,19 +31,30 @@ class LogsAnalyzer:
                 elif eval_log_re.match(line):
                     eval_results.append(rmse)
 
-        return train_results, eval_results
+                if first_line is None:
+                    first_line = line
+
+                last_line = line
+
+            start_time = datetime.strptime(date_time.match(first_line).group(), "%Y-%m-%d %H:%M:%S")
+            end_time = datetime.strptime(date_time.match(last_line).group(), "%Y-%m-%d %H:%M:%S")
+            time_diff = end_time - start_time
+
+        return train_results, eval_results, time_diff
 
     @staticmethod
     def parse_train_logs(file_names):
         train_results = []
         eval_results = []
+        training_time = timedelta(0)
 
         for file_name in file_names:
-            train, eval = LogsAnalyzer.parse_train_log(file_name)
+            train, eval, time_diff = LogsAnalyzer.parse_train_log(file_name)
             train_results.extend(train)
             eval_results.extend(eval)
+            training_time += time_diff
 
-        return train_results, eval_results
+        return train_results, eval_results, training_time
 
     @staticmethod
     def parse_score(score_file_name):
@@ -92,9 +109,3 @@ class LogsAnalyzer:
                 scores_predict_binary.append(3.0 < predicted)
 
         return scores, scores_actual, scores_predict, scores_actual_binary, scores_predict_binary
-
-
-
-
-
-

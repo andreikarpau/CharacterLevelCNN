@@ -3,8 +3,16 @@ import matplotlib.pyplot as plt
 
 
 def _generate_training_rmse_chart(plot_name, log_files):
-    train_logs, eval_logs= LogsAnalyzer.parse_train_logs(log_files)
+    train_logs, eval_logs, training_time = LogsAnalyzer.parse_train_logs(log_files)
     epochs = range(1, len(eval_logs) + 1)
+
+    print(
+        f'''
+Training {plot_name} encoding:
+epochs count = {len(epochs)}
+time taken = {training_time}
+        '''
+    )
 
     fig, ax = plt.subplots()
     ax.plot(epochs, eval_logs)
@@ -25,7 +33,6 @@ def build_training_rmse_charts():
                  "data/models/logs/standard_run_1_3/train.log",
                  "data/models/logs/standard_run_1_4/train.log"]
     _generate_training_rmse_chart(plot_name, log_files)
-
 
     # standard_group_run
     plot_name = "Standard Group"
