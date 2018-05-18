@@ -10,7 +10,7 @@ job:
       gpus: 1
   env:
     - name: "OUTPUT_POSTFIX"
-      value: "run_1_5"
+      value: "run_1_7"
     - name: "USE_WHOLE_DATASET"
       value: "True"
     - name: "DATA_PATH"
@@ -20,16 +20,18 @@ job:
     - name: "ENCODING_NAME"
       value: "ascii_group"
     - name: "EPOCHS_COUNT"
-      value: 25
+      value: 50
     - name: "BATCH_SIZE"
       value: 250
     - name: "LEARNING_RATE"
       value: 0.00003
     - name: "DROPOUT_RATE"
-      value: 0.15
+      value: 0.20
     - name: "RUN_MODE"
       value: "train"
     - name: "RESTORE_CHECKPOINT_PATH"
-      value: "/data/d071506/text_cnn/output/checkpoints/ascii_group_run_1_4/model_epoch19.ckpt"
+      value: "/data/d071506/text_cnn/output/checkpoints/ascii_group_run_1_6/model_epoch99.ckpt"
     - name: "EXTENDED_MODE"
       value: "False"
+    - name: "TRAIN_EVAL_BATCH_SIZE"
+      value: 1000
