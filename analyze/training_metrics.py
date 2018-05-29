@@ -31,7 +31,8 @@ def build_training_rmse_charts():
     log_files = ["data/models/logs/standard_run_1/train.log",
                  "data/models/logs/standard_run_1_2/train.log",
                  "data/models/logs/standard_run_1_3/train.log",
-                 "data/models/logs/standard_run_1_4/train.log"]
+                 "data/models/logs/standard_run_1_4/train.log",
+                 "data/models/logs/standard_run_1_5/train.log"]
     _generate_training_rmse_chart(plot_name, log_files)
 
     # standard_group_run
@@ -39,7 +40,8 @@ def build_training_rmse_charts():
     log_files = ["data/models/logs/standard_group_run_1/train.log",
                  "data/models/logs/standard_group_run_1_2/train.log",
                  "data/models/logs/standard_group_run_1_3/train.log",
-                 "data/models/logs/standard_group_run_1_4/train.log"]
+                 "data/models/logs/standard_group_run_1_4/train.log",
+                 "data/models/logs/standard_group_run_1_5/train.log"]
     _generate_training_rmse_chart(plot_name, log_files)
 
     # # ascii_run
@@ -60,5 +62,6 @@ def build_training_rmse_charts():
                  "data/models/logs/ascii_group_run_1_3/train.log",
                  "data/models/logs/ascii_group_run_1_4/train.log",
                  "data/models/logs/ascii_group_run_1_5/train.log",
-                 "data/models/logs/ascii_group_run_1_6/train.log"]
+                 "data/models/logs/ascii_group_run_1_6/train.log",
+                 "data/models/logs/ascii_group_run_1_7/train.log"]
     _generate_training_rmse_chart(plot_name, log_files)

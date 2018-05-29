@@ -2,3 +2,4 @@ tensorflow
 logging
 matplotlib
 pandas_ml
+sklearn

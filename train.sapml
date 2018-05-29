@@ -10,7 +10,7 @@ job:
       gpus: 1
   env:
     - name: "OUTPUT_POSTFIX"
-      value: "run_1_7"
+      value: "run_1_7_e48"
     - name: "USE_WHOLE_DATASET"
       value: "True"
     - name: "DATA_PATH"
@@ -28,9 +28,9 @@ job:
     - name: "DROPOUT_RATE"
       value: 0.20
     - name: "RUN_MODE"
-      value: "train"
+      value: "eval"
     - name: "RESTORE_CHECKPOINT_PATH"
-      value: "/data/d071506/text_cnn/output/checkpoints/ascii_group_run_1_6/model_epoch99.ckpt"
+      value: "/data/d071506/text_cnn/output/checkpoints/ascii_group_run_1_7/model_epoch48.ckpt"
     - name: "EXTENDED_MODE"
       value: "False"
     - name: "TRAIN_EVAL_BATCH_SIZE"
