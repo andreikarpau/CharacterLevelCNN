@@ -1,6 +1,7 @@
 from sklearn.model_selection import train_test_split
 
-from preprocess.file_helper import FileHelper
+from helpers.file_helper import FileHelper
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -42,8 +43,30 @@ def save_subsampled_data(source_file, result_name):
                                       format(result_name, len(scores_test)), texts_test, scores_test)
 
 
-save_subsampled_data("data/Beauty_5.json", "Beauty")
-save_subsampled_data("data/Cell_Phones_and_Accessories_5.json", "Phones")
-save_subsampled_data("data/Grocery_and_Gourmet_Food_5.json", "Grocery")
-save_subsampled_data("data/Pet_Supplies_5.json", "Pet_Supplies")
-save_subsampled_data("data/Toys_and_Games_5.json", "Games")
+def build_rates_chart(file, name):
+    texts, scores = FileHelper.get_formated_messages_from_file(file)
+    scores = np.asarray(scores)
+    sizes = [sum(scores == 1), sum(scores == 2), sum(scores == 3), sum(scores == 4), sum(scores == 5)]
+    labels = ["Rate 1", "Rate 2", "Rate 3", "Rate 4", "Rate 5"]
+
+    fig, ax1 = plt.subplots()
+    ax1.set_title("Rates allocation in category {}".format(name), y=1.08)
+    ax1.pie(sizes, labels=labels, autopct='%1.1f%%', shadow=False, startangle=0)
+    ax1.axis('equal')
+
+    fig.savefig("./output/plots/rates/{}RatesAllocation.png".format(name))
+    plt.show()
+
+#---------------------Plots-------------------------
+build_rates_chart("data/Beauty_5.json", "Beauty")
+build_rates_chart("data/Cell_Phones_and_Accessories_5.json", "Phones")
+build_rates_chart("data/Grocery_and_Gourmet_Food_5.json", "Grocery")
+build_rates_chart("data/Pet_Supplies_5.json", "Pet Supplies")
+build_rates_chart("data/Toys_and_Games_5.json", "Games")
+
+#------------------Sumsampling----------------------
+# save_subsampled_data("data/Beauty_5.json", "Beauty")
+# save_subsampled_data("data/Cell_Phones_and_Accessories_5.json", "Phones")
+# save_subsampled_data("data/Grocery_and_Gourmet_Food_5.json", "Grocery")
+# save_subsampled_data("data/Pet_Supplies_5.json", "Pet_Supplies")
+# save_subsampled_data("data/Toys_and_Games_5.json", "Games")
