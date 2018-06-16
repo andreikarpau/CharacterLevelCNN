@@ -63,7 +63,7 @@ test_folder = "data/encoded/ascii_group/test/"
 train_folder = "data/encoded/ascii_group/train/"
 encode_and_store(alphabet, test_folder, train_folder, False)
 
-#-----------Verify Group Encoding-------------
+#-----------Verify Encoding-------------
 
 encoding_name = "ascii"
 alphabet = EncodeHelper.make_ascii_encoding()
