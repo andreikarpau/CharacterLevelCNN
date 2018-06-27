@@ -32,6 +32,9 @@ def _print_roc_curves(roc, roc_bin, name):
 
 
 def _print_confusion_matrix_rocs(name, score_file_name):
+    print("----------------{}---------------\n".format(name))
+    print("Score classification: ")
+
     scores, s_actual, s_predict, s_actual_bin, s_predict_bin, roc, roc_bin =\
         LogsAnalyzer.get_compared_scores(score_file_name)
 
@@ -39,8 +42,6 @@ def _print_confusion_matrix_rocs(name, score_file_name):
     conf = ConfusionMatrix(s_actual, s_predict)
     conf_bin = ConfusionMatrix(s_actual_bin, s_predict_bin)
 
-    print("----------------{}---------------\n".format(name))
-    print("Score classification: ")
     print("overall accuracy = {}\n".format(conf.stats_overall["Accuracy"]))
     print(conf)
     print("\nBinary classification: ")

@@ -84,6 +84,9 @@ class LogsAnalyzer:
     def get_optimal_threshold(actual, scores, rate1, rate2):
         filter = np.where(np.logical_and(rate1 <= actual, actual <= rate2))
         fpr, tpr, thresholds = metrics.roc_curve(actual[filter], scores[filter], pos_label=rate2)
+
+        print("AUC {} {}: {}".format(rate1, rate2, metrics.auc(fpr, tpr)))
+
         optimal_idx = np.argmax(tpr - fpr)
         optimal_threshold = thresholds[optimal_idx]
         return {"threshold": optimal_threshold, "fpr": fpr, "tpr": tpr, "thresholds": thresholds}
@@ -92,6 +95,9 @@ class LogsAnalyzer:
     def get_optimal_threshold_binary(actual, scores):
         filter = np.where(actual != 3.0)
         fpr, tpr, thresholds = metrics.roc_curve(3.0 < actual[filter], scores[filter])
+
+        print("AUC polarity: {}".format(metrics.auc(fpr, tpr)))
+
         optimal_idx = np.argmax(tpr - fpr)
         optimal_threshold = thresholds[optimal_idx]
         return {"threshold": optimal_threshold, "fpr": fpr, "tpr": tpr, "thresholds": thresholds}
