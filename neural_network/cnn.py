@@ -53,7 +53,7 @@ class CNNRunner:
         self.batch_size = batch_size
         self.logger = logger
 
-    def call_for_each_batch(self, dataset_length, epoch, call_func):
+    def call_for_each_batch(self, dataset_length, epoch, call_func, messages, scores):
         start_index = 0
         end_index = self.batch_size
 
@@ -64,7 +64,7 @@ class CNNRunner:
             if self.VERBOSE:
                 self.logger.info("Epoch {}, Batch {} - {}: ".format(epoch, start_index, end_index, epoch))
 
-            call_func(start_index, end_index, epoch)
+            call_func(start_index, end_index, epoch, messages, scores)
 
             start_index += self.batch_size
             end_index += self.batch_size

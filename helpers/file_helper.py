@@ -26,6 +26,12 @@ class FileHelper:
         return True
 
     @staticmethod
+    def read_bootstrap_file(path='data/test_bootstrap/indexes.json'):
+        with open(path) as f:
+            data = json.load(f)
+            return data
+
+    @staticmethod
     def read_data_file(name, filter_func=None, max_num=None):
         texts = []
         summaries = []

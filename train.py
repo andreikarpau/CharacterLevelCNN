@@ -47,6 +47,7 @@ train_eval_batch_size = int(os.getenv('TRAIN_EVAL_BATCH_SIZE', 1000))
 learning_rate = float(os.getenv('LEARNING_RATE', 0.0001))
 dropout = float(os.getenv('DROPOUT_RATE', 0.25))
 
+eval_mode = os.getenv('EVAL_MODE', 'default')
 mode_str = os.getenv('RUN_MODE', 'train')
 mode = tf.estimator.ModeKeys.TRAIN if mode_str == 'train' else tf.estimator.ModeKeys.EVAL
 
@@ -55,6 +56,11 @@ logger = FileHelper.get_file_console_logger(full_output_name, output_folder, "{}
 
 # Load data
 dataset_length = 0
+
+train_messages = []
+train_scores = []
+test_messages = []
+test_scores = []
 
 if mode == tf.estimator.ModeKeys.TRAIN:
     test_messages, test_scores = PreprocessHelper.get_encoded_messages(
@@ -159,14 +165,14 @@ config.gpu_options.allow_growth = True
 runner = CNNRunner(VERBOSE, batch_size, logger)
 
 with tf.Session(config=config) as sess:
-    def run_train(start_index, end_index, epoch_num):
+    def run_train(start_index, end_index, epoch_num, messages, scores):
         is_train.load(True, sess)
-        sess.run(optimiser, feed_dict={x_batch: train_messages[start_index:end_index],
-                                       y: train_scores[start_index:end_index]})
+        sess.run(optimiser, feed_dict={x_batch: messages[start_index:end_index],
+                                       y: scores[start_index:end_index]})
 
         is_train.load(False, sess)
-        batch_rmse = sess.run(root_mean_square_error, feed_dict={x_batch: train_messages[start_index:end_index],
-                                                                 y: train_scores[start_index:end_index]})
+        batch_rmse = sess.run(root_mean_square_error, feed_dict={x_batch: messages[start_index:end_index],
+                                                                 y: scores[start_index:end_index]})
         logger.info("Train Epoch {}, Batch {} - {}: RMSE = {}".format(epoch_num, start_index, end_index, batch_rmse))
 
     def run_eval(start_index, end_index, epoch_num):
@@ -199,18 +205,22 @@ with tf.Session(config=config) as sess:
             os.makedirs(checkpoints_dir)
 
         for epoch in range(epochs):
-            runner.call_for_each_batch(dataset_length, epoch, run_train)
+            runner.call_for_each_batch(dataset_length, epoch, run_train, train_messages, train_scores)
             saver.save(sess, "{}/model_epoch{}.ckpt".format(checkpoints_dir, epoch))
             run_eval(0, train_eval_batch_size, epoch)
 
         writer.close()
 
     if mode == tf.estimator.ModeKeys.EVAL:
-        runner.call_for_each_batch(dataset_length, 0, run_eval)
-        total_rmse = math.sqrt(eval_results["sum"] / eval_results["count"])
-        logger.info("Eval Total RMSE = {}".format(total_rmse))
+        if eval_mode == "default":
+            runner.call_for_each_batch(dataset_length, 0, run_eval, test_messages, test_scores)
+            total_rmse = math.sqrt(eval_results["sum"] / eval_results["count"])
+            logger.info("Eval Total RMSE = {}".format(total_rmse))
 
-        eval_score_dir = "{}/eval/{}/score.json".format(output_folder, full_output_name)
-        FileHelper.write_predictions_to_file(eval_score_dir, eval_results["predicted"], eval_results["actual"])
-
+            eval_score_dir = "{}/eval/{}/score.json".format(output_folder, full_output_name)
+            FileHelper.write_predictions_to_file(eval_score_dir, eval_results["predicted"], eval_results["actual"])
+        elif eval_mode == "bootstrap":
+            bootstraps = FileHelper.read_bootstrap_file()
+            for i in range(len(bootstraps)):
+                indexes = bootstraps[i]
 
