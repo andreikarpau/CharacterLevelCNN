@@ -51,16 +51,13 @@ eval_mode = os.getenv('EVAL_MODE', 'default')
 mode_str = os.getenv('RUN_MODE', 'train')
 mode = tf.estimator.ModeKeys.TRAIN if mode_str == 'train' else tf.estimator.ModeKeys.EVAL
 
-# logging
-logger = FileHelper.get_file_console_logger(full_output_name, output_folder, "{}.log".format(mode_str), True)
-
 # Load data
-dataset_length = 0
-
 train_messages = []
 train_scores = []
 test_messages = []
 test_scores = []
+
+log_file_name = mode_str
 
 if mode == tf.estimator.ModeKeys.TRAIN:
     test_messages, test_scores = PreprocessHelper.get_encoded_messages(
@@ -73,8 +70,6 @@ if mode == tf.estimator.ModeKeys.TRAIN:
         train_messages, train_scores = PreprocessHelper.get_encoded_messages(
             "{}/{}/train/Beauty_train_32343.json.pickle".format(data_path, encoding_name))
 
-    dataset_length = len(train_messages)
-
 if mode == tf.estimator.ModeKeys.EVAL:
     if use_whole_dataset:
         test_messages, test_scores = PreprocessHelper.get_encoded_messages_from_folder(
@@ -83,7 +78,12 @@ if mode == tf.estimator.ModeKeys.EVAL:
         test_messages, test_scores = PreprocessHelper.get_encoded_messages(
             "{}/{}/test/Beauty_test_13862.json.pickle".format(data_path, encoding_name))
 
-    dataset_length = len(test_messages)
+    if mode_str != 'default':
+        log_file_name = "{}_{}".format(log_file_name, eval_mode)
+
+# logging
+logger = FileHelper.get_file_console_logger(full_output_name, output_folder, "{}.log".format(log_file_name), True)
+
 
 # Initialize graph
 tf.reset_default_graph()
@@ -175,17 +175,17 @@ with tf.Session(config=config) as sess:
                                                                  y: scores[start_index:end_index]})
         logger.info("Train Epoch {}, Batch {} - {}: RMSE = {}".format(epoch_num, start_index, end_index, batch_rmse))
 
-    def run_eval(start_index, end_index, epoch_num):
+    def run_eval(start_index, end_index, epoch_num, messages, scores):
         is_train.load(False, sess)
         squared_error_sum, predicted = sess.run([error_sum, full_connected3],
-                                                feed_dict={x_batch: test_messages[start_index:end_index],
-                                                y: test_scores[start_index:end_index]})
+                                                feed_dict={x_batch: messages[start_index:end_index],
+                                                y: scores[start_index:end_index]})
         count = end_index - start_index
 
         eval_results["sum"] = eval_results["sum"] + squared_error_sum
         eval_results["count"] = eval_results["count"] + count
         eval_results["predicted"].extend(predicted)
-        eval_results["actual"].extend(test_scores[start_index:end_index])
+        eval_results["actual"].extend(scores[start_index:end_index])
 
         batch_rmse = math.sqrt(squared_error_sum/count)
 
@@ -205,7 +205,7 @@ with tf.Session(config=config) as sess:
             os.makedirs(checkpoints_dir)
 
         for epoch in range(epochs):
-            runner.call_for_each_batch(dataset_length, epoch, run_train, train_messages, train_scores)
+            runner.call_for_each_batch(epoch, run_train, train_messages, train_scores)
             saver.save(sess, "{}/model_epoch{}.ckpt".format(checkpoints_dir, epoch))
             run_eval(0, train_eval_batch_size, epoch)
 
@@ -213,7 +213,7 @@ with tf.Session(config=config) as sess:
 
     if mode == tf.estimator.ModeKeys.EVAL:
         if eval_mode == "default":
-            runner.call_for_each_batch(dataset_length, 0, run_eval, test_messages, test_scores)
+            runner.call_for_each_batch(0, run_eval, test_messages, test_scores)
             total_rmse = math.sqrt(eval_results["sum"] / eval_results["count"])
             logger.info("Eval Total RMSE = {}".format(total_rmse))
 
@@ -221,6 +221,9 @@ with tf.Session(config=config) as sess:
             FileHelper.write_predictions_to_file(eval_score_dir, eval_results["predicted"], eval_results["actual"])
         elif eval_mode == "bootstrap":
             bootstraps = FileHelper.read_bootstrap_file()
-            for i in range(len(bootstraps)):
-                indexes = bootstraps[i]
-
+            for iteration in range(len(bootstraps)):
+                indexes = bootstraps[iteration]
+                sample_messages, sample_scores = runner.get_subset(test_messages, test_scores, indexes)
+                runner.call_for_each_batch(iteration, run_eval, sample_messages, sample_scores)
+                total_mse = eval_results["sum"] / eval_results["count"]
+                logger.info("Iteration {}, Eval Total MSE = {}".format(iteration, total_mse))

@@ -53,9 +53,10 @@ class CNNRunner:
         self.batch_size = batch_size
         self.logger = logger
 
-    def call_for_each_batch(self, dataset_length, epoch, call_func, messages, scores):
+    def call_for_each_batch(self, epoch, call_func, messages, scores):
         start_index = 0
         end_index = self.batch_size
+        dataset_length = len(messages)
 
         while start_index < dataset_length:
             if dataset_length < end_index:
@@ -68,3 +69,14 @@ class CNNRunner:
 
             start_index += self.batch_size
             end_index += self.batch_size
+
+    @staticmethod
+    def get_subset(messages, scores, indexes):
+        sample_messages = []
+        sample_scores = []
+
+        for index in indexes:
+            sample_messages.append(messages[index])
+            sample_scores.append(scores[index])
+
+        return sample_messages, sample_scores

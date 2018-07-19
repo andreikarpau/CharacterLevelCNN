@@ -29,6 +29,8 @@ job:
       value: 0.20
     - name: "RUN_MODE"
       value: "eval"
+    - name: "EVAL_MODE"
+      value: "bootstrap"
     - name: "RESTORE_CHECKPOINT_PATH"
       value: "/data/d071506/text_cnn/output/checkpoints/ascii_group_run_1_7/model_epoch48.ckpt"
     - name: "EXTENDED_MODE"

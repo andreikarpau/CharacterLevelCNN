@@ -11,7 +11,7 @@ def bootstrap_test_indexes(reviews_count=52442, sample_size=5000, samples_number
 
         all_indexes.append(indexes)
 
-    with open('data/test_bootstrap/indexes.json', 'w+') as file:
+    with open('analyze/indexes.json', 'w+') as file:
         json.dump(all_indexes, file)
 
 
