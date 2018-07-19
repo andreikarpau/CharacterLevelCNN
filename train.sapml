@@ -10,7 +10,7 @@ job:
       gpus: 1
   env:
     - name: "OUTPUT_POSTFIX"
-      value: "run_1_7_e48"
+      value: "run_1_5_e48"
     - name: "USE_WHOLE_DATASET"
       value: "True"
     - name: "DATA_PATH"
@@ -18,7 +18,7 @@ job:
     - name: "OUTPUT_FOLDER"
       value: "/data/d071506/text_cnn/output"
     - name: "ENCODING_NAME"
-      value: "ascii_group"
+      value: "standard"
     - name: "EPOCHS_COUNT"
       value: 50
     - name: "BATCH_SIZE"
@@ -32,7 +32,7 @@ job:
     - name: "EVAL_MODE"
       value: "bootstrap"
     - name: "RESTORE_CHECKPOINT_PATH"
-      value: "/data/d071506/text_cnn/output/checkpoints/ascii_group_run_1_7/model_epoch48.ckpt"
+      value: "/data/d071506/text_cnn/output/checkpoints/standard_run_1_5/model_epoch48.ckpt"
     - name: "EXTENDED_MODE"
       value: "False"
     - name: "TRAIN_EVAL_BATCH_SIZE"
