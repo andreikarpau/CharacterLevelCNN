@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 from helpers.file_helper import FileHelper
 import json
@@ -39,6 +40,18 @@ class PreprocessHelper:
             all_scores.extend(scores)
 
         return all_messages, all_scores
+
+    @staticmethod
+    def bootstrap_test_indexes(reviews_count=52442, sample_size=5000, samples_number=20):
+        all_indexes = []
+        for sn in range(samples_number):
+            indexes = None
+            for i in range(sample_size):
+                indexes = np.random.choice(reviews_count, sample_size)
+
+            all_indexes.append(indexes)
+
+        return all_indexes
 
     @staticmethod
     def get_encoded_messages(file_name):

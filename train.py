@@ -79,7 +79,7 @@ if mode == tf.estimator.ModeKeys.EVAL:
             "{}/{}/test/Beauty_test_13862.json.pickle".format(data_path, encoding_name))
 
     if mode_str != 'default':
-        log_file_name = "{}_{}".format(log_file_name, eval_mode)
+        log_file_name = "{}_{}_v2".format(log_file_name, eval_mode)
 
 # logging
 logger = FileHelper.get_file_console_logger(full_output_name, output_folder, "{}.log".format(log_file_name), True)
@@ -220,7 +220,7 @@ with tf.Session(config=config) as sess:
             eval_score_dir = "{}/eval/{}/score.json".format(output_folder, full_output_name)
             FileHelper.write_predictions_to_file(eval_score_dir, eval_results["predicted"], eval_results["actual"])
         elif eval_mode == "bootstrap":
-            bootstraps = FileHelper.read_bootstrap_file()
+            bootstraps = PreprocessHelper.bootstrap_test_indexes()
             for iteration in range(len(bootstraps)):
                 indexes = bootstraps[iteration]
                 sample_messages, sample_scores = runner.get_subset(test_messages, test_scores, indexes)

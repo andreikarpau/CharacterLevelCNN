@@ -46,6 +46,22 @@ class LogsAnalyzer:
         return train_results, eval_results, time_diff
 
     @staticmethod
+    def parse_eval_bootstap_log(file_name):
+        eval_log_re = re.compile(".* Eval Total MSE .*")
+        mse_re = re.compile(".* MSE = ?([0-9]*[.][0-9]+)")
+
+        eval_results = []
+
+        with open(file_name, "r") as logs_file:
+            for line in logs_file:
+                if eval_log_re.match(line):
+                    search_res = mse_re.search(line)
+                    mse = float(search_res.groups()[0])
+                    eval_results.append(mse)
+
+        return eval_results
+
+    @staticmethod
     def parse_train_logs(file_names):
         train_results = []
         eval_results = []
